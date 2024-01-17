@@ -1,14 +1,14 @@
 Looking to launch executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2", simd = .avx2
 Launching executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2"
-[bwa_index] Pack FASTA... 2.00 sec
+[bwa_index] Pack FASTA... 1.72 sec
 * Entering FMI_search
-init ticks = 30827357740
+init ticks = 29846476360
 ref seq len = 1100481760
-binary seq ticks = 13468614760
-build suffix-array ticks = 315155528860
+binary seq ticks = 13194079320
+build suffix-array ticks = 274715849100
 pos: 137560221, ref_seq_len__: 137560220
-build fm-index ticks = 60330043220
-Total time taken: 212.3612
+build fm-index ticks = 60347844620
+Total time taken: 191.7334
 Looking to launch executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2", simd = .avx2
 Launching executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2"
 -----------------------------
@@ -36,7 +36,38 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ACWOSDA_2_1_HNWVMDSX3_UDI007.R2_clean_subsampled.fq'.
+[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ACWOSDA_2_1_HNWVMDSX3_UDI007.R2_clean_subsampled.fq'.
+[main_samview] fail to read the header from "-".
+[W::hts_set_opt] Cannot change block size for this format
+samtools sort: failed to read header from "-"
+Looking to launch executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2", simd = .avx2
+Launching executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2"
+-----------------------------
+Executing in AVX2 mode!!
+-----------------------------
+* SA compression enabled with xfactor: 8
+* Ref file: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
+* Entering FMI_search
+* Index file found. Loading index from /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.bwt.2bit.64
+* Reference seq len for bi-index = 1100481761
+* sentinel-index: 447160467
+* Count:
+0,	1
+1,	348669759
+2,	550240881
+3,	751812003
+4,	1100481761
+
+* Reading other elements of the index from files /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
+* Index prefix: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
+* Read 0 ALT contigs
+* Done reading Index!!
+* Reading reference genome..
+* Binary seq file = /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.0123
+* Reference genome size: 1100481760 bp
+* Done reading reference genome !!
+
+[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ACWOSDA_2_2_HNWVMDSX3_UDI007.R1_clean_subsampled.fq'.
 free(): double free detected in tcache 2
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
@@ -68,7 +99,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ACWOSDA_2_2_HNWVMDSX3_UDI007.R1_clean_subsampled.fq'.
+[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ADXOSDA_2_1_HNWVMDSX3_UDI054.R2_clean_subsampled.fq'.
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
 samtools sort: failed to read header from "-"
@@ -99,7 +130,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ADXOSDA_2_1_HNWVMDSX3_UDI054.R2_clean_subsampled.fq'.
+[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ADXOSDA_2_2_HNWVMDSX3_UDI054.R1_clean_subsampled.fq'.
 free(): double free detected in tcache 2
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
@@ -131,7 +162,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_ADXOSDA_2_2_HNWVMDSX3_UDI054.R1_clean_subsampled.fq'.
+[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AECOSDA_2_1_HNWVMDSX3_UDI058.R2_clean_subsampled.fq'.
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
 samtools sort: failed to read header from "-"
@@ -162,7 +193,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AECOSDA_2_1_HNWVMDSX3_UDI058.R2_clean_subsampled.fq'.
+[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AECOSDA_2_2_HNWVMDSX3_UDI058.R1_clean_subsampled.fq'.
 free(): double free detected in tcache 2
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
@@ -194,7 +225,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AECOSDA_2_2_HNWVMDSX3_UDI058.R1_clean_subsampled.fq'.
+[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AEEOSDA_2_1_HNWVMDSX3_UDI060.R2_clean_subsampled.fq'.
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
 samtools sort: failed to read header from "-"
@@ -225,7 +256,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AEEOSDA_2_1_HNWVMDSX3_UDI060.R2_clean_subsampled.fq'.
+[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AEEOSDA_2_2_HNWVMDSX3_UDI060.R1_clean_subsampled.fq'.
 free(): double free detected in tcache 2
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
@@ -257,7 +288,7 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AEEOSDA_2_2_HNWVMDSX3_UDI060.R1_clean_subsampled.fq'.
+[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AFDOSDA_2_1_HNWVMDSX3_UDI027.R2_clean_subsampled.fq'.
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
 samtools sort: failed to read header from "-"
@@ -288,102 +319,8 @@ Executing in AVX2 mode!!
 * Reference genome size: 1100481760 bp
 * Done reading reference genome !!
 
-[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AFDOSDA_2_1_HNWVMDSX3_UDI027.R2_clean_subsampled.fq'.
+[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AFDOSDA_2_2_HNWVMDSX3_UDI027.R1_clean_subsampled.fq'.
 free(): double free detected in tcache 2
-[main_samview] fail to read the header from "-".
-[W::hts_set_opt] Cannot change block size for this format
-samtools sort: failed to read header from "-"
-Looking to launch executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2", simd = .avx2
-Launching executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2"
------------------------------
-Executing in AVX2 mode!!
------------------------------
-* SA compression enabled with xfactor: 8
-* Ref file: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Entering FMI_search
-* Index file found. Loading index from /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.bwt.2bit.64
-* Reference seq len for bi-index = 1100481761
-* sentinel-index: 447160467
-* Count:
-0,	1
-1,	348669759
-2,	550240881
-3,	751812003
-4,	1100481761
-
-* Reading other elements of the index from files /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Index prefix: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Read 0 ALT contigs
-* Done reading Index!!
-* Reading reference genome..
-* Binary seq file = /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.0123
-* Reference genome size: 1100481760 bp
-* Done reading reference genome !!
-
-[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AFDOSDA_2_2_HNWVMDSX3_UDI027.R1_clean_subsampled.fq'.
-[main_samview] fail to read the header from "-".
-[W::hts_set_opt] Cannot change block size for this format
-samtools sort: failed to read header from "-"
-Looking to launch executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2", simd = .avx2
-Launching executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2"
------------------------------
-Executing in AVX2 mode!!
------------------------------
-* SA compression enabled with xfactor: 8
-* Ref file: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Entering FMI_search
-* Index file found. Loading index from /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.bwt.2bit.64
-* Reference seq len for bi-index = 1100481761
-* sentinel-index: 447160467
-* Count:
-0,	1
-1,	348669759
-2,	550240881
-3,	751812003
-4,	1100481761
-
-* Reading other elements of the index from files /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Index prefix: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Read 0 ALT contigs
-* Done reading Index!!
-* Reading reference genome..
-* Binary seq file = /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.0123
-* Reference genome size: 1100481760 bp
-* Done reading reference genome !!
-
-[E::main_mem] failed to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AGHOSDA_2_1_HNWVMDSX3_UDI090.R2_clean_subsampled.fq'.
-free(): double free detected in tcache 2
-[main_samview] fail to read the header from "-".
-[W::hts_set_opt] Cannot change block size for this format
-samtools sort: failed to read header from "-"
-Looking to launch executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2", simd = .avx2
-Launching executable "/usr/local/bioinfo/src/bwa-mem2/bwa-mem2-2.2.1//bwa-mem2.avx2"
------------------------------
-Executing in AVX2 mode!!
------------------------------
-* SA compression enabled with xfactor: 8
-* Ref file: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Entering FMI_search
-* Index file found. Loading index from /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.bwt.2bit.64
-* Reference seq len for bi-index = 1100481761
-* sentinel-index: 447160467
-* Count:
-0,	1
-1,	348669759
-2,	550240881
-3,	751812003
-4,	1100481761
-
-* Reading other elements of the index from files /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Index prefix: /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
-* Read 0 ALT contigs
-* Done reading Index!!
-* Reading reference genome..
-* Binary seq file = /home/jbonnier/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.0123
-* Reference genome size: 1100481760 bp
-* Done reading reference genome !!
-
-[E::main_mem] fail to open file `/home/jbonnier/work/Dicorynia/test_subsamples/raw_subsamples/DBR_AGHOSDA_2_2_HNWVMDSX3_UDI090.R1_clean_subsampled.fq'.
 [main_samview] fail to read the header from "-".
 [W::hts_set_opt] Cannot change block size for this format
 samtools sort: failed to read header from "-"
