@@ -1,0 +1,62 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=01:00:00 #job time limit
+#SBATCH -J mapping #job name
+#SBATCH -o output.out #output file name
+#SBATCH -e error.out #error file name
+#SBATCH --mem=15G #memory reservation
+#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH --mail-type=BEGIN,END,FAIL 
+
+#Clean work place 
+module purge
+
+#Charger les modules necessaires 
+module load bioinfo/bwa-mem2/2.2.1
+module load bioinfo/samtools/1.19
+
+# Se placer dans le répertoire contenant les fichiers
+cd ~/work/Dicorynia/Raw_data/ 
+
+#Indexing the referance genome
+bwa-mem2 index Dgu_HS1_HYBRID_SCAFFOLD.fa
+
+#Creating a variable pointing to the reference genome and the individual 
+REF=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
+
+INDS=($(for i in ~/work/Dicorynia/test_subsamples/raw_subsamples/*_clean_subsampled.fq; do
+  base=$(basename $i)
+  echo "${base%%.R[12]_clean_subsampled.fq}" | sed 's/_clean_subsampled//g'
+done))
+
+
+
+#to check if INDS work 
+echo "${INDS[@]}"
+
+
+#Declare variables separate foward and reverse 
+
+for IND in ${INDS[@]};
+do
+	# declare variables
+	FORWARD=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R1_clean_subsampled.fq
+	REVERSE=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R2_clean_subsampled.fq
+	OUTPUT=~/work/Dicorynia/test_subsamples/align_subsamples/${IND}_sort.bam
+
+# then align and sort
+	echo "Aligning $IND with bwa"
+	bwa-mem2 mem -M -t 4 $REF $FORWARD \
+	$REVERSE | samtools view -b | \
+	samtools sort -T ${IND} > $OUTPUT
+
+done
+
+
+
+
+
+
+
+
+
