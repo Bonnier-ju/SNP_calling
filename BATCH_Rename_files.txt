@@ -1,0 +1,11 @@
+#Rename files for an easier processing 
+
+for fichier in DBR_*_2_2_*_clean_subsampled.fastq; do
+    nouveau_nom=$(echo "$fichier" | awk -F'[_\\.]' '{print $1"_"$2"_"$3"_"$4"_"$5"_"$6".R2_clean_subsampled.fq"}')
+    mv "$fichier" "$nouveau_nom"
+done
+
+for fichier in DBR_*_2_1_*_clean_subsampled.fastq; do
+    nouveau_nom=$(echo "$fichier" | awk -F'[_\\.]' '{print $1"_"$2"_"$3"_"$4"_"$5"_"$6".R1_clean_subsampled.fq"}')
+    mv "$fichier" "$nouveau_nom"
+done
