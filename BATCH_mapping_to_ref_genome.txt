@@ -24,11 +24,11 @@ bwa-mem2 index Dgu_HS1_HYBRID_SCAFFOLD.fa
 #Creating a variable pointing to the reference genome and the individual 
 REF=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
 
-INDS=($(for i in ~/work/Dicorynia/test_subsamples/raw_subsamples/*_clean_subsampled.fq; do
-  base=$(basename $i)
-  echo "${base%%.R[12]_clean_subsampled.fq}" | sed 's/_clean_subsampled//g'
-done))
 
+INDS=($(for i in ~/work/Dicorynia/test_subsamples/raw_subsamples/*_clean_subsampled.fastq; do
+    base=$(basename "$i")
+    echo "${base%%.R[12]_clean_subsampled.fastq}" 
+done))
 
 
 #to check if INDS work 
@@ -37,24 +37,25 @@ echo "${INDS[@]}"
 
 #Declare variables separate foward and reverse 
 
+
 for IND in ${INDS[@]};
 do
-	# declare variables
-	FORWARD=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R1_clean_subsampled.fq
-	REVERSE=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R2_clean_subsampled.fq
-	OUTPUT=~/work/Dicorynia/test_subsamples/align_subsamples/${IND}_sort.bam
+  FORWARD=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R1_clean_subsampled.fastq
+  REVERSE=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R2_clean_subsampled.fastq
+  OUTPUT=~/work/Dicorynia/test_subsamples/align_subsamples/${IND}_sort.bam
 
-# then align and sort
-	echo "Aligning $IND with bwa"
-	bwa-mem2 mem -M -t 4 $REF $FORWARD \
-	$REVERSE | samtools view -b | \
-	samtools sort -T ${IND} > $OUTPUT
+  echo "${FORWARD[@]}"
+  echo "${REVERSE[@]}"
+  
+
+  # then align and sort
+  echo "Aligning $IND with bwa"
+  bwa-mem2 mem -M -t 4 $REF $FORWARD $REVERSE | samtools view -b | samtools sort -T ${IND} > $OUTPUT
 
 done
 
 
 
-test git hub 
 
 
 
