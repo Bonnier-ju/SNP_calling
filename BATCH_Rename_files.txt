@@ -1,4 +1,19 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=01:00:00 #job time limit
+#SBATCH -J creat_subsample #job name
+#SBATCH -o output.out #output file name
+#SBATCH -e error.out #error file name
+#SBATCH --mem=4G #memory reservation
+#SBATCH --cpus-per-task=1 #ncpu on the same node
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+
 #Rename files for an easier processing 
+# Se placer dans le répertoire contenant les fichiers
+cd ~/work/Dicorynia/Raw_data/ 
+
+
 
 for fichier in DBR_*_2_2_*_clean_subsampled.fastq; do
     nouveau_nom=$(echo "$fichier" | awk -F'[_\\.]' '{print $1"_"$2"_"$3"_"$4"_"$5"_"$6".R2_clean_subsampled.fq"}')
