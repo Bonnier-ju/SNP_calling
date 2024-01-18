@@ -1,0 +1,62 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=01:00:00 #job time limit
+#SBATCH -J mapping #job name
+#SBATCH -o output.out #output file name
+#SBATCH -e error.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+
+#Clean work place 
+module purge 
+
+#Chargement des modules 
+module load bioinfo/samtools/1.19
+module load devel/python/Python-3.11.1
+module load bioinfo/bedtools/2.30.0
+
+
+#Définir les repertoires de destinations
+DEST_DIR=~/work/Dicorynia/test_subsamples/align_subsamples/flagstat_files/
+BED_DIR=~/work/Dicorynia/test_subsamples/bed_subsamples/
+STATS_DIR=~/work/Dicorynia/test_subsamples/bed_subsamples/bed_analysis/
+
+
+###Analyses avec flagstat des alignements###
+#Effectue un contrôle de qualité QC 
+#Donne le nombre de lectures primaires, secondaires, supplémentaires, duplicata
+#le nombre de reads mapper etc 
+cd ~/work/Dicorynia/test_subsamples/align_subsamples/
+
+for bamFile in *.bam
+do
+    # Modifier le chemin de sortie pour pointer vers DEST_DIR
+    samtools flagstat "$bamFile" > "${DEST_DIR}/${bamFile}_flagstat.txt" 
+done
+
+
+
+# Conversion de fichiers BAM en fichiers BED
+cd ~/work/Dicorynia/test_subsamples/align_subsamples/
+
+for bamFile in *.bam
+do
+    bedFile="${BED_DIR}/$(basename "${bamFile%.*}").bed"
+    echo "Conversion de $bamFile en format BED"
+    bedtools bamtobed -i "$bamFile" > "$bedFile"
+done
+
+
+
+# Analyse simple - Compter les lectures dans chaque région BED
+# Donne le nombre de reads des sequençages qui se trouve dans chaque super-scaffold 
+
+cd ~/work/Dicorynia/test_subsamples/align_subsamples/
+
+for bedFile in "$BED_DIR"/*.bed; do
+    statsFile="${STATS_DIR}/$(basename "${bedFile%.*}")_stats.txt"
+    echo "Calcul des statistiques pour $bedFile"
+    cut -f1 "$bedFile" | sort | uniq -c > "$statsFile"
+done
