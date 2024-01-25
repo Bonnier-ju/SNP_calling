@@ -1,0 +1,47 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=01:00:00 #job time limit
+#SBATCH -J filtering_reads #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/output_files/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/error_files/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH --mail-user=bonnier.ju@gmail.com 
+#SBATCH --mail-type=END,FAIL
+
+#Clean work place 
+module purge
+
+#Charger les modules necessaires 
+module load bioinfo/fastp/0.23.2 
+
+# Chemin du dossier contenant les fichiers FASTQ
+FASTQ_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/raw_subsamples/"
+
+# Chemin du dossier de sortie pour les fichiers traités
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/filtered_reads/"
+
+# Se placer dans le dossier contenant les fichiers FASTQ
+cd "$FASTQ_DIR"
+
+for R1 in *.R1_clean_subsampled.fastq; do
+    # Identifier le fichier R2 correspondant
+    R2="${R1/R1/R2}"
+
+    # Vérifier si le fichier R2 existe
+    if [[ -f "$R2" ]]; then
+        # Nom de base pour les fichiers de sortie
+        BASE_NAME=$(basename "$R1" .R1.fastq.gz)
+		 echo "Traitement des fichiers : $R1 et $R2"
+
+        # Exécuter fastp
+        echo "Traitement des fichiers: $R1 et $R2"
+        fastp --in1 "$R1" --in2 "$R2" \
+              --out1 "${OUTPUT_DIR}/${BASE_NAME}.R1.trimmed.fastq.gz" \
+              --out2 "${OUTPUT_DIR}/${BASE_NAME}.R2.trimmed.fastq.gz" \
+              -l 50 -h "${OUTPUT_DIR}/${BASE_NAME}.html" &> "${OUTPUT_DIR}/${BASE_NAME}.log"
+		echo "Traitement terminé pour : $BASE_NAME"
+    else
+        echo "Fichier correspondant à $R1 non trouvé: $R2"
+    fi
+done
