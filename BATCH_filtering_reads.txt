@@ -20,7 +20,7 @@ FASTQ_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/raw_subsamples/"
 
 # Chemin du dossier de sortie pour les fichiers traités et échoués
 OUTPUT_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/filtered_reads/"
-OUTPUT_FAIL="/work/user/jbonnier/Dicorynia/test_subsamples/filtered_reads/"
+OUTPUT_FAIL="/work/user/jbonnier/Dicorynia/test_subsamples/filtered_reads/failed_reads/"
 
 
 # Se placer dans le dossier contenant les fichiers FASTQ
@@ -33,16 +33,16 @@ for R1 in *.R1_clean_subsampled.fastq; do
     # Vérifier si le fichier R2 existe
     if [[ -f "$R2" ]]; then
         # Nom de base pour les fichiers de sortie
-        BASE_NAME=$(basename "$R1" .R1.fastq.gz)
-		 echo "Traitement des fichiers : $R1 et $R2"
+        BASE_NAME=$(basename "$R1" .R1_clean_subsampled.fastq)
+		 echo "Traitement des basename des fichiers : $R1 et $R2"
 
         # Exécuter fastp
-        echo "Traitement des fichiers: $R1 et $R2"
         fastp --in1 "$R1" --in2 "$R2" \
               --out1 "${OUTPUT_DIR}/${BASE_NAME}.R1.trimmed.fastq.gz" \
               --out2 "${OUTPUT_DIR}/${BASE_NAME}.R2.trimmed.fastq.gz" \
-			  --failed_out1 "${OUTPUT_FAIL}/${BASE_NAME}.R1.failed.fastq.gz" \
-			  --failed_out2 "${OUTPUT_FAIL}/${BASE_NAME}.R2.failed.fastq.gz" \
+			  --failed_out "${OUTPUT_FAIL}/${BASE_NAME}.failed.fastq.gz" \
+			  --dup_calc_accuracy 2 \
+			  --trim_poly_g \
               -l 100 -h "${OUTPUT_DIR}/${BASE_NAME}.html" &> "${OUTPUT_DIR}/${BASE_NAME}.log"
 		echo "Traitement terminé pour : $BASE_NAME"
     else
@@ -51,8 +51,3 @@ for R1 in *.R1_clean_subsampled.fastq; do
 done
 
 
-
-###Informations sur fastp : 
-
-#l'ajustement de l'adaptateur est activé par défaut
-#
