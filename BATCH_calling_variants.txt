@@ -4,8 +4,8 @@
 #SBATCH -J mapping #job name
 #SBATCH -o output.out #output file name
 #SBATCH -e error.out #error file name
-#SBATCH --mem=15G #memory reservation
-#SBATCH --cpus-per-task=3 #ncpu on the same node
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=4 #ncpu on the same node
 #SBATCH --mail-type=BEGIN,END,FAIL
 
 
@@ -27,10 +27,23 @@ module purge
 
 module load devel/python/Python-3.11.1 devel/java/17.0.6
 module load bioinfo/GATK/4.2.6.1
+module load bioinfo/samtools/1.19
+
+
+###Index bamfiles### 
+cd ~/work/Dicorynia/test_subsamples/align_subsamples/
+for bamFile in *.bam
+do
+    samtools index "$bamFile"
+done
 
 
 
 ###HaplotypeCaller###
+#HaplotypeCaller analyse les données de séquençage alignées (fichiers BAM ou CRAM) pour détecter les variations génétiques par rapport à une séquence de référence.
+#Il reconstruit les haplotypes possibles dans une région donnée du génome et compare ensuite ces haplotypes à la séquence de référence pour identifier les variantes.
+#HaplotypeCaller peut générer des fichiers Genomic VCF (gVCF), qui contiennent non seulement les variantes détectées mais aussi des informations sur les régions non variantes du génome.
+
 
 #Se placer dans le fichier contenant les bam files 
 
@@ -38,7 +51,7 @@ cd ~/work/Dicorynia/test_subsamples/align_subsamples/
 
 #Définir le dossier de sortie des fichiers
 
-OUTPUT_DIR="~/work/Dicorynia/test_subsamples/variants_calling/haplocall_gvcf/"
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/haplocall_gvcf/"
 
 #Boucle
 
