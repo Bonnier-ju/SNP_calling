@@ -39,12 +39,14 @@ module load bioinfo/GATK/4.2.6.1
 
 ###Create sample map### 
 
-# Path to gvcf files 
+# Chemin où se trouvent les fichiers GVCF
 GVCF_PATH="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/haplocall_gvcf/"
+
+# Chemin du dossier où stocker le fichier de mappage
 MAP_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/"
 
-# Création d'un fichier de mappage échantillon vide
-touch "${MAP_DIR}sample_map.txt"
+# Créer (ou écraser) un fichier de mappage échantillon vide
+echo -n "" > "${MAP_DIR}sample_map.txt"
 
 # Boucle pour parcourir tous les fichiers GVCF dans le chemin spécifié
 for file in ${GVCF_PATH}*.g.vcf.gz; do 
@@ -52,5 +54,3 @@ for file in ${GVCF_PATH}*.g.vcf.gz; do
    echo -e $(basename "${file%.*}")"\t"${file} >> "${MAP_DIR}sample_map.txt"
 done
 
-
-#### attention si la boucle est relancer deux fois d'affilé, elle réécris une deuxième fois les infos 
