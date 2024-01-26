@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p workq
-#SBATCH --time=01:00:00 #job time limit
-#SBATCH -J CV-haplotype_call #job name
+#SBATCH --time=05:00:00 #job time limit
+#SBATCH -J CV-data_aggregation #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/output_files/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/error_files/error-%x-%j.out #error file name
 #SBATCH --mem=20G #memory reservation
@@ -35,14 +35,15 @@ module load bioinfo/GATK/4.2.6.1
 #We normally recommend running jobs with 70%-80% efficiency. Based on the efficiency calculated GenomicsDBImport should be run with no more than 2 threads.
 #As for memory, increasing memory didn’t improve performance (best 6G, following graph from nih.gov)
 
+#GenomicsDB is a utility built on top of TileDB. TileDB is a format for efficiently representing sparse data. 
+#Genomics data is typically sparse in that each sample has few variants with respect to the entire reference genome. 
+#GenomicsDB contains code to specialize TileDB for genomics applications, such as VCF parsing and INFO field annotation calculation.
 
 
 ###Create sample map### 
 
-# Chemin où se trouvent les fichiers GVCF
+# Paht to files 
 GVCF_PATH="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/haplocall_gvcf/"
-
-# Chemin du dossier où stocker le fichier de mappage
 MAP_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/"
 
 # Créer (ou écraser) un fichier de mappage échantillon vide
@@ -53,4 +54,87 @@ for file in ${GVCF_PATH}*.g.vcf.gz; do
    # Extraction du nom de base du fichier et écriture dans le fichier de mappage
    echo -e $(basename "${file%.*}")"\t"${file} >> "${MAP_DIR}sample_map.txt"
 done
+
+
+###Spliting reference genome by super scaffold###
+# Chemins spécifiés
+REF_INDEX="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.fai"
+SEQ_LIST_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/reference.sequences.lists"
+
+echo "Début du script de traitement des séquences de référence."
+
+# Création d'un répertoire pour les listes de séquences
+echo "Création du répertoire pour les listes de séquences..."
+mkdir -p "$SEQ_LIST_DIR"
+
+# Extraction des noms des séquences de référence et stockage dans un fichier
+echo "Extraction et stockage des noms des séquences de référence..."
+cut -f1 "$REF_INDEX" > "${SEQ_LIST_DIR}/reference.sequences.list"
+
+# Changement de répertoire pour se placer dans le dossier des listes de séquences
+cd "$SEQ_LIST_DIR"
+echo "Division du fichier de listes de séquences en fichiers plus petits..."
+split -l 100 -d reference.sequences.list reference.sequences_ --additional-suffix=.list
+
+
+# Comptage des fichiers créés et affichage du nombre
+echo "Nombre de fichiers créés : $(ls | wc -l)"
+
+
+
+###Using GenomicsDB###
+
+# Chemin vers la base de données GenomicsDB
+DB_PATH="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/GenomicsDB"
+TMP_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/tmp"
+
+# Importation des données GVCF dans GenomicsDB
+for file in ${SEQ_LIST_DIR}/*.list; do
+    echo "Importation de ${file} dans GenomicsDB."
+
+    gatk --java-options "-Xmx4g -Xms4g" \
+     GenomicsDBImport \
+     --genomicsdb-workspace-path "$DB_PATH/my_database" \
+     --batch-size 10 \
+     -L /work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/reference.sequences.lists/reference.sequences.list \
+     --sample-name-map "/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/sample_map.txt" \
+     --tmp-dir "/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/tmp" \
+     --reader-threads 4 
+
+    echo "Importation de ${file} terminée."
+done
+
+
+###Joint Genotyping with GenotypeGVCFs###
+#This tool is designed to perform joint genotyping on a single input, which may contain one or many samples. 
+#In any case, the input samples must possess genotype likelihoods produced by HaplotypeCaller with `-ERC GVCF` or `-ERC BP_RESOLUTION`.
+
+#Input
+#The GATK4 GenotypeGVCFs tool can take only one input track. Options are :
+#1) a single single-sample GVCF 
+#2) a single multi-sample GVCF created by CombineGVCFs  
+#3) a GenomicsDB workspace created by GenomicsDBImport. 
+#A sample-level GVCF is produced by HaplotypeCaller with the `-ERC GVCF` setting
+
+# (Vos directives et étapes précédentes...)
+
+### Joint Genotyping with GenotypeGVCFs ###
+
+# Path
+REF_GENOME="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa"
+DB_PATH="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/GenomicsDB/my_database"
+OUTPUT_VCF="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/joint_genotyping.vcf.gz"
+TMP_DIR="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/data_aggregation/tmp"
+
+echo "Début du génotypage conjoint."
+
+# Exécution de GenotypeGVCFs
+gatk --java-options "-Xmx4g" GenotypeGVCFs \
+   -R "$REF_GENOME" \
+   -V gendb://"$DB_PATH" \
+   -O "$OUTPUT_VCF" \
+   --tmp-dir "$TMP_DIR"
+
+echo "Génotypage conjoint terminé."
+
 
