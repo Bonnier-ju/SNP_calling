@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=05:00:00 #job time limit
+#SBATCH -J analysis_variants_calling #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/output_files/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/error_files/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+#Clean work place 
+module purge
+
+#Charger les modules necessaires 
+module load bioinfo/Bcftools/1.9
+
+
+# Chemin vers le fichier VCF
+VCF_FILE="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/joint_genotyping.vcf.gz"
+
+# Comptage du nombre total de variants
+echo "Nombre total de variants:"
+bcftools view -H $VCF_FILE | wc -l
+
+# Comptage du nombre de SNPs et d'indels
+echo "Nombre de SNPs:"
+bcftools view -H -v snps $VCF_FILE | wc -l
+
+echo "Nombre d'indels:"
+bcftools view -H -v indels $VCF_FILE | wc -l
+
+# Fréquence des allèles
+echo "Fréquence des allèles:"
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%AF\n' $VCF_FILE
+
+# Statistiques de qualité de base des variants
+echo "Statistiques de qualité de base des variants:"
+bcftools stats $VCF_FILE > vcf_stats.txt
+cat vcf_stats.txt
+
+# Filtrer les variants par qualité
+QUAL=30  # Définir le seuil de qualité
+bcftools view -H -i '%QUAL>'$QUAL $VCF_FILE > filtered_variants.vcf
+
+echo "Analyse terminée."
