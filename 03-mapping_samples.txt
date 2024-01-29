@@ -9,51 +9,49 @@
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
-#Clean work place 
+# Clean work place 
 module purge
 
-#Charger les modules necessaires 
+# Charger les modules nécessaires 
 module load bioinfo/bwa-mem2/2.2.1
 module load bioinfo/samtools/1.19
 
-# Move to the directorie containing files
+# Move to the directory containing files
 cd /work/user/jbonnier/Dicorynia/full_workflow/02-filtering_reads/ 
 
-#Indexing the referance genome
-#bwa-mem2 index Dgu_HS1_HYBRID_SCAFFOLD.fa
-#reference genome already indexed 
-
-#Creating a variable pointing to the reference genome and the individual 
+# Reference genome
 REF=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
 
-
+# Creating an array of sample names
 INDS=($(for i in ~/work/Dicorynia/full_workflow/02-filtering_reads/*.trimmed.fastq.gz; do
     base=$(basename "$i")
     echo "${base%%.R[12].trimmed.fastq.gz}" 
-done))
+done | uniq))
 
 
-#to check if INDS work 
-echo "${INDS[@]}"
-
-
-#Declare variables separate foward and reverse 
-
-for IND in ${INDS[@]};
-do
+# Declare variables for forward and reverse reads and output
+for IND in "${INDS[@]}"; do
   FORWARD=~/work/Dicorynia/full_workflow/02-filtering_reads/${IND}.R1.trimmed.fastq.gz
   REVERSE=~/work/Dicorynia/full_workflow/02-filtering_reads/${IND}.R2.trimmed.fastq.gz
   OUTPUT=~/work/user/jbonnier/Dicorynia/full_workflow/03-mapping/${IND}_sort.bam
 
-  echo "${FORWARD[@]}"
-  echo "${REVERSE[@]}"
+
+  # Extract the ID part from the filename
+  ID_PART1=$(echo "$IND" | cut -d '_' -f 4)
+  ID_PART2=$(echo "$IND" | cut -d '_' -f 2)
+  ID_PART3=$(echo "$IND" | cut -d '_' -f 3)
   
   
-# Align and sort
+  # Define the read group with the extracted ID
+  RG="@RG\tID:${ID_PART1}\tSM:${ID_PART2}\tPL:illumina\tLB:${ID_PART3}_lib"
+
+
+
+  # Align and sort
   echo "Aligning $IND with bwa"
-  bwa-mem2 mem -M -t 6 $REF $FORWARD $REVERSE | \
+  bwa-mem2 mem -M -R "$RG" -t ${SLURM_CPUS_PER_TASK} $REF $FORWARD $REVERSE | \
   samtools view -b | \
-  samtools sort -T ${IND} > $OUTPUT
+  samtools sort -o $OUTPUT
 
   echo "Mapping and sorting completed for: $IND"
 done
