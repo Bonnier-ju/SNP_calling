@@ -1,7 +1,13 @@
+#####Analysis of filtering results#####
+
+#Installing library 
 library(tidyverse)
 
+setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/02-filtering_reads")
+
+
 # Chemin vers le dossier contenant vos fichiers de log
-log_dir <- "/chemin/vers/vos/fichiers/log"
+log_dir <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/02-filtering_reads/log_files_filtered"
 
 # Lister tous les fichiers de log dans le dossier
 log_files <- list.files(log_dir, pattern = "\\.log$", full.names = TRUE)
