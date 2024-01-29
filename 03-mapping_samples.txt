@@ -4,7 +4,7 @@
 #SBATCH -J 03-mapping_samples #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=20G #memory reservation
+#SBATCH --mem=24G #memory reservation
 #SBATCH --cpus-per-task=6 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
@@ -17,7 +17,7 @@ module load bioinfo/bwa-mem2/2.2.1
 module load bioinfo/samtools/1.19
 
 # Move to the directorie containing files
-cd ~/work/Dicorynia/Raw_data/ 
+cd /work/user/jbonnier/Dicorynia/full_workflow/02-filtering_reads/ 
 
 #Indexing the referance genome
 #bwa-mem2 index Dgu_HS1_HYBRID_SCAFFOLD.fa
@@ -27,9 +27,9 @@ cd ~/work/Dicorynia/Raw_data/
 REF=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
 
 
-INDS=($(for i in ~/work/Dicorynia/test_subsamples/raw_subsamples/*_clean_subsampled.fastq; do
+INDS=($(for i in ~/work/Dicorynia/full_workflow/02-filtering_reads/*.trimmed.fastq.gz; do
     base=$(basename "$i")
-    echo "${base%%.R[12]_clean_subsampled.fastq}" 
+    echo "${base%%.R[12].trimmed.fastq.gz}" 
 done))
 
 
@@ -39,19 +39,21 @@ echo "${INDS[@]}"
 
 #Declare variables separate foward and reverse 
 
-
 for IND in ${INDS[@]};
 do
-  FORWARD=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R1_clean_subsampled.fastq
-  REVERSE=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R2_clean_subsampled.fastq
-  OUTPUT=~/work/Dicorynia/test_subsamples/align_subsamples/${IND}_sort.bam
+  FORWARD=~/work/Dicorynia/full_workflow/02-filtering_reads/${IND}.R1.trimmed.fastq.gz
+  REVERSE=~/work/Dicorynia/full_workflow/02-filtering_reads/${IND}.R2.trimmed.fastq.gz
+  OUTPUT=~/work/user/jbonnier/Dicorynia/full_workflow/03-mapping/${IND}_sort.bam
 
   echo "${FORWARD[@]}"
   echo "${REVERSE[@]}"
   
-
-  # then align and sort
+  
+# Align and sort
   echo "Aligning $IND with bwa"
-  bwa-mem2 mem -M -t 4 $REF $FORWARD $REVERSE | samtools view -b | samtools sort -T ${IND} > $OUTPUT
+  bwa-mem2 mem -M -t 6 $REF $FORWARD $REVERSE | \
+  samtools view -b | \
+  samtools sort -T ${IND} > $OUTPUT
 
+  echo "Mapping and sorting completed for: $IND"
 done
