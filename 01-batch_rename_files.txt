@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=01:00:00 #job time limit
+#SBATCH -J 01-rename_files #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=6G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+#Rename files for an easier processing 
+# Move in the directory containing files 
+cd ~/work/Dicorynia/Raw_data/ 
+
+# Loop 1 lists the folders containing the sequences stored in the "d" variable
+for d in $(ls -d ~/work/Dicorynia/Raw_data/*/); do
+    echo "Traitement du dossier: $d"
+
+#Move to directory containingthe files
+    cd "$d"
+
+
+  # Rename files R2
+    for fichier in DBR_*_2_2_*.fastq.gz; do
+        nouveau_nom=$(echo "$fichier" | awk -F'[_\\.]' '{print $1"_"$2"_"$5"_"$6".R2.fastq.gz"}')
+        mv "$fichier" "$nouveau_nom"
+		echo "R2 files renamed"
+    done
+
+    # Rename files R1
+    for fichier in DBR_*_2_1_*.fastq.gz; do
+        nouveau_nom=$(echo "$fichier" | awk -F'[_\\.]' '{print $1"_"$2"_"$5"_"$6".R1.fastq.gz"}')
+        mv "$fichier" "$nouveau_nom"
+		echo "R1 files renamed"
+    done
+
+ # Return to parent directory for next loop iteration
+    cd ..
+done
