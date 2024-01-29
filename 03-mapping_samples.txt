@@ -1,0 +1,57 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=48:00:00 #job time limit
+#SBATCH -J 03-mapping_samples #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+#Clean work place 
+module purge
+
+#Charger les modules necessaires 
+module load bioinfo/bwa-mem2/2.2.1
+module load bioinfo/samtools/1.19
+
+# Move to the directorie containing files
+cd ~/work/Dicorynia/Raw_data/ 
+
+#Indexing the referance genome
+#bwa-mem2 index Dgu_HS1_HYBRID_SCAFFOLD.fa
+#reference genome already indexed 
+
+#Creating a variable pointing to the reference genome and the individual 
+REF=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
+
+
+INDS=($(for i in ~/work/Dicorynia/test_subsamples/raw_subsamples/*_clean_subsampled.fastq; do
+    base=$(basename "$i")
+    echo "${base%%.R[12]_clean_subsampled.fastq}" 
+done))
+
+
+#to check if INDS work 
+echo "${INDS[@]}"
+
+
+#Declare variables separate foward and reverse 
+
+
+for IND in ${INDS[@]};
+do
+  FORWARD=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R1_clean_subsampled.fastq
+  REVERSE=~/work/Dicorynia/test_subsamples/raw_subsamples/${IND}.R2_clean_subsampled.fastq
+  OUTPUT=~/work/Dicorynia/test_subsamples/align_subsamples/${IND}_sort.bam
+
+  echo "${FORWARD[@]}"
+  echo "${REVERSE[@]}"
+  
+
+  # then align and sort
+  echo "Aligning $IND with bwa"
+  bwa-mem2 mem -M -t 4 $REF $FORWARD $REVERSE | samtools view -b | samtools sort -T ${IND} > $OUTPUT
+
+done
