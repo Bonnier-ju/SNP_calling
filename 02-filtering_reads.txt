@@ -1,0 +1,58 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=12:00:00 #job time limit
+#SBATCH -J 02-filtering_reads #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+#Clean work place 
+module purge
+
+#Load necessary modules 
+module load bioinfo/fastp/0.23.2 
+
+# Output folder path for processed and failed files
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/02-filtering_reads/"
+OUTPUT_FAIL="/work/user/jbonnier/Dicorynia/full_workflow/02-filtering_reads/failed_reads/"
+
+
+# Move in the directory containing files 
+cd ~/work/Dicorynia/Raw_data/ 
+
+# Loop 1 lists the folders containing the sequences stored in the "d" variable
+for d in $(ls -d ~/work/Dicorynia/Raw_data/*/); do
+    echo "Traitement du dossier: $d"
+
+
+#Move to directory containingthe files
+    cd "$d"
+
+
+for R1 in *.R1.fastq.gz; do
+    # Identify the corresponding R2 file
+    R2="${R1/R1/R2}"
+
+    # Check if the R2 file exists
+    if [[ -f "$R2" ]]; then
+        # Base name for output files 
+        BASE_NAME=$(basename "$R1" .R1.fastq.gz)
+		 echo "Processing of basenames files : $R1 et $R2"
+
+        # Run fastp
+        fastp --in1 "$R1" --in2 "$R2" \
+              --out1 "${OUTPUT_DIR}/${BASE_NAME}.R1.trimmed.fastq.gz" \
+              --out2 "${OUTPUT_DIR}/${BASE_NAME}.R2.trimmed.fastq.gz" \
+			  --failed_out "${OUTPUT_FAIL}/${BASE_NAME}.failed.fastq.gz" \
+			  --dup_calc_accuracy 2 \
+			  --trim_poly_g \
+              -l 100 -h "${OUTPUT_DIR}/${BASE_NAME}.html" &> "${OUTPUT_DIR}/${BASE_NAME}.log"
+		echo "Processing end for : $BASE_NAME"
+    else
+        echo "File corresponding to $R1 not find: $R2"
+    fi
+done
+done
