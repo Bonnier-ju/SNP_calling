@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p workq
-#SBATCH --time=48:00:00 #job time limit
+#SBATCH --time=90:00:00 #job time limit
 #SBATCH -J 03-mapping_samples #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=24G #memory reservation
-#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mem=30G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
