@@ -18,13 +18,6 @@ log_files <- list.files(log_dir, pattern = "\\.log$", full.names = TRUE)
 # Read only one log file
 process_log_file <- function(file_path) {
   lines <- read_lines(file_path)
-  
-  
-  # S'assurer que `lines` est bien un vecteur de chaînes de caractères
-  if (!is.character(lines)) {
-    stop("Expected 'lines' to be a character vector, but it was not.")
-  }
-  
 
   
   # Data extraction
