@@ -2,6 +2,9 @@
 
 #Installing library 
 library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
 
 setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/02-filtering_reads")
 
@@ -46,23 +49,73 @@ process_log_file <- function(file_path) {
   )
 }
 
-# Appliquer la fonction à tous les fichiers et combiner les résultats
+# Apply function in all files and combine results
 log_data <- map_df(log_files, process_log_file)
 
-# Afficher le résumé des données
+# Data summary
 print(log_data)
 
-# Enregistrer le résumé dans un fichier CSV
+# Save data in CSV file
 write_csv(log_data, file.path(log_dir, "summary_log_data.csv"))
 
-# Analyse et visualisation
-# Par exemple, tracer le nombre de lectures passées pour chaque échantillon
-ggplot(log_data, aes(x = FileName, y =TotalReads_passed)) +
+# Plots for passed reads
+ggplot(log_data, aes(x = FileName, y = TotalReads_passed, fill = FileName)) +
   geom_bar(stat = "identity") +
+  scale_fill_viridis_d() + # Utiliser une échelle de couleurs
   theme_minimal() +
-  labs(title = "Nombre de lectures passées par échantillon",
-       x = "Échantillon",
-       y = "Lectures passées") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 8),
+        legend.position = "none",
+        panel.grid.major.y = element_line(color = "grey90")) +
+  labs(title = "Reads passed by sample",
+       x = "Sample",
+       y = "Passed reads") +
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))
+
+
+#Plot for duplication rates 
+ggplot(log_data, aes(x = FileName, y = Duplication_rates, fill = FileName)) +
+  geom_bar(stat = "identity") +
+  scale_fill_viridis_d() + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 8),
+        legend.position = "none", 
+        panel.grid.major.y = element_line(color = "black")) +
+  labs(title = "Duplication rates (percent)",
+       x = "Sample",
+       y = "Duplication rates")
+
+
+#Plot for failed reads
+log_data_long <- log_data %>%
+  pivot_longer(cols = c(Failedreads_lq, Failedreads_N, Failedread_short),
+               names_to = "Measurement",
+               values_to = "Value")
+
+ggplot(log_data_long, aes(x = FileName, y = Value, fill = Measurement)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  theme_minimal() +
+  labs(title = "Failed Reads Analysis",
+       x = "Sample",
+       y = "Count") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))
+
+
+#Plots for trimmed adapters
+log_data_long <- log_data %>%
+  pivot_longer(cols = c(Adapters_trimmed_reads, Adapters_trimmed_base),
+               names_to = "Measurement",
+               values_to = "Value")
+
+ggplot(log_data_long, aes(x = FileName, y = Value, fill = Measurement)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  theme_minimal() +
+  labs(title = "Trimmed adapters",
+       x = "Sample",
+       y = "Count") +
+  scale_fill_brewer(palette = "Set1") +
+  theme(axis.text.x = element_text(angle = 70, hjust = 1))
+
+
 
 
