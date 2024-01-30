@@ -33,7 +33,7 @@ done | uniq))
 for IND in "${INDS[@]}"; do
   FORWARD=~/work/Dicorynia/full_workflow/02-filtering_reads/${IND}.R1.trimmed.fastq.gz
   REVERSE=~/work/Dicorynia/full_workflow/02-filtering_reads/${IND}.R2.trimmed.fastq.gz
-  OUTPUT=~/work/user/jbonnier/Dicorynia/full_workflow/03-mapping/${IND}_sort.bam
+  OUTPUT=~/work/Dicorynia/full_workflow/03-mapping/${IND}_sort.bam
 
 
   # Extract the ID part from the filename
