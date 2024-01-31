@@ -52,6 +52,9 @@ print(log_data)
 write_csv(log_data, file.path(log_dir, "summary_log_data.csv"))
 
 # Plots for passed reads
+#Read Passed Filter: This term refers to sequence reads that have passed the quality and filtering criteria specific to the sequencing platform. 
+#Reads that "pass the filter" are considered to be of good quality and suitable for further analysis.
+
 ggplot(log_data, aes(x = FileName, y = TotalReads_passed, fill = FileName)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis_d() + # Utiliser une échelle de couleurs
@@ -79,6 +82,14 @@ ggplot(log_data, aes(x = FileName, y = Duplication_rates, fill = FileName)) +
 
 
 #Plot for failed reads
+#Read Failed Due to Low Quality: These reads have failed to meet the minimum quality criteria, often due to an average quality score that is too low over the length of the read. 
+#Quality scores are generally assigned to each base and indicate confidence in the accuracy of that base.
+
+#Reads Failed Due to Too Many N: Reads containing an excessive number of "N" bases fail filtering. 
+#An "N" base indicates uncertainty as to the identity of the base (A, T, C, or G), often due to a weak or ambiguous signal during sequencing.
+
+#Reads Failed Due to Too Short: These reads are rejected because they are shorter than the minimum length defined for the analysis. 
+#The minimum length is often specified to ensure that reads are sufficiently informative for reliable alignment or assembly.
 log_data_long <- log_data %>%
   pivot_longer(cols = c(Failedreads_lq, Failedreads_N, Failedread_short),
                names_to = "Measurement",
