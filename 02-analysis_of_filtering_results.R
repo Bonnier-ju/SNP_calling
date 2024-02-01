@@ -106,18 +106,16 @@ ggplot(log_data_long, aes(x = FileName, y = Value, fill = Measurement)) +
 
 
 #Plots for trimmed adapters
-log_data_long <- log_data %>%
-  pivot_longer(cols = c(Adapters_trimmed_reads, Adapters_trimmed_base),
-               names_to = "Measurement",
-               values_to = "Value")
-
-ggplot(log_data_long, aes(x = FileName, y = Value, fill = Measurement)) +
-  geom_bar(stat = "identity", position = position_dodge()) +
+ggplot(log_data, aes(x = FileName, y = Adapters_trimmed_reads, fill = FileName)) +
+  geom_bar(stat = "identity") +
+  scale_fill_viridis_d() + # Utiliser une échelle de couleurs
   theme_minimal() +
-  labs(title = "Trimmed adapters",
+  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 8),
+        legend.position = "none",
+        panel.grid.major.y = element_line(color = "grey90")) +
+  labs(title = "Adaptaters trimmed",
        x = "Sample",
-       y = "Count") +
-  scale_fill_brewer(palette = "Set1") +
+       y = "Nb Adapters") +
   theme(axis.text.x = element_text(angle = 70, hjust = 1))
 
 
