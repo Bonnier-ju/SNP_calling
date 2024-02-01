@@ -1,15 +1,17 @@
 
 ####Analysis of mapping results####
-#
 
 # Load packages 
 install.packages("ggplot2")
 library(ggplot2)
 
+setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/03-mapping_samples")
+
+
 # Chemin vers les dossiers contenant les fichiers de sortie
-flagstatDir <- "/chemin/vers/03-flagstat_files/"
-bedDir <- "/chemin/vers/03-bed_files/"
-statsDir <- "/chemin/vers/03-bed_analysis/"
+flagstatDir <- "/03-mapping_samples/03-flagstat_files/"
+bedDir <- "/03-mapping_samples/03-bed_files/"
+statsDir <- "/03-mapping_samples/03-bed_analysis/"
 
 # Lire et analyser les fichiers flagstat
 # Liste des fichiers flagstat
@@ -62,5 +64,4 @@ bedStatsData <- do.call(rbind, lapply(statsFiles, readBedStats))
 # Afficher un résumé
 print(head(bedStatsData))
 
-# Note: Les visualisations et analyses spécifiques dépendront de la nature de vos données et de vos objectifs de recherche.
 
