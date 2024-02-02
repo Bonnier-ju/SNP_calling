@@ -1,0 +1,70 @@
+#!/bin/bash
+#SBATCH -p unlimitq
+#SBATCH --time=99:00:00 #job time limit
+#SBATCH -J 04.1-haplotype_caller #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+######## Variant calling ########
+
+#`GATK` (Genome Analysis ToolKit) properly pronounced "Gee-ay-tee-kay" (/dʒi•eɪ•ti•keɪ/) and not "Gat-kay" (/ɡæt•keɪ/) 
+# has apparently similar performance to other variant callers. 
+# 3 steps (following Sylvain Schmitt "Symcapture") 
+# 1. Variant calling__ Run the `HaplotypeCaller` on each sample's BAM files to create single-sample gVCFs using the `.g.vcf` extension for the output file.
+# 2. Data aggregation__ Aggregate the GVCF files and feed in one GVCF with `GenomicsDBImport` to be genotyped
+# 3. Joint genotyping__ Run `GenotypeGVCFs` on all of them together to create the raw SNP and indel VCFs that are usually emitted by the callers.
+
+
+#Clean work place 
+
+module purge 
+
+#Loading modules 
+
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+module load bioinfo/samtools/1.19
+
+
+###Index bamfiles### 
+cd ~/work/Dicorynia/full_workflow/03-mapping/
+for bamFile in *.bam
+do
+    samtools index "$bamFile"
+done
+
+echo "End of indexing BAM files"
+
+###HaplotypeCaller###
+#HaplotypeCaller analyzes aligned sequencing data (BAM or CRAM files) to detect genetic variations in relation to a reference sequence.
+#It reconstructs possible haplotypes in a given region of the genome and then compares these haplotypes to the reference sequence to identify variants.
+#HaplotypeCaller can generate Genomic VCF (gVCF) files, which contain not only the detected variants but also information on non-variant regions of the genome.
+
+#Define output file
+
+OUTPUT_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.1-haplotype_caller_files/
+
+#Boucle
+
+for bamFile in *.bam
+do
+    # Extract name files without extension
+    baseName=$(basename "$bamFile" .bam)
+
+    # Define path for output gVCF files
+    outputFile="${OUTPUT_DIR}/${baseName}.g.vcf.gz"
+	
+ # GATK HaplotypeCaller
+    echo "Traitement de $bamFile"
+    gatk --java-options "-Xmx6g" HaplotypeCaller \
+         -R ~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa \
+         -I "$bamFile" \
+         -O "$outputFile" \
+         -ERC GVCF
+done
+
+echo "End of haplotype_caller processing" 
