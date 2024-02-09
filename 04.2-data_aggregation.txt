@@ -1,0 +1,94 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=05:00:00 #job time limit
+#SBATCH -J 04.2-data_aggregation #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/output_files/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/error_files/error-%x-%j.out #error file name
+#SBATCH --mem=8G #memory reservation
+#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+######## Variant calling ########
+
+#`GATK` (Genome Analysis ToolKit) properly pronounced "Gee-ay-tee-kay" (/dʒi•eɪ•ti•keɪ/) and not "Gat-kay" (/ɡæt•keɪ/) 
+# has apparently similar performance to other variant callers. 
+# 3 steps (following Sylvain Schmitt "Symcapture") 
+# 1. Variant calling__ Run the `HaplotypeCaller` on each sample's BAM files to create single-sample gVCFs using the `.g.vcf` extension for the output file.
+# 2. Data aggregation__ Aggregate the GVCF files and feed in one GVCF with `GenomicsDBImport` to be genotyped
+# 3. Joint genotyping__ Run `GenotypeGVCFs` on all of them together to create the raw SNP and indel VCFs that are usually emitted by the callers.
+
+
+#Clean work place 
+
+module purge 
+
+#Loading modules 
+
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+
+
+###Data aggregation with GenomicsDBImport ###
+#GVCFs are consolidated into a GenomicsDB datastore in order to improve scalability and speedup the next step: joint genotyping.
+#We normally recommend running jobs with 70%-80% efficiency. Based on the efficiency calculated GenomicsDBImport should be run with no more than 2 threads.
+#As for memory, increasing memory didn’t improve performance (best 6G, following graph from nih.gov)
+
+#GenomicsDB is a utility built on top of TileDB. TileDB is a format for efficiently representing sparse data. 
+#Genomics data is typically sparse in that each sample has few variants with respect to the entire reference genome. 
+#GenomicsDB contains code to specialize TileDB for genomics applications, such as VCF parsing and INFO field annotation calculation.
+
+
+###Create sample map### 
+
+# Paths to files 
+GVCF_PATH=~/work/Dicorynia/full_workflow/04-calling_variants/04.1-haplotype_caller_files/
+MAP_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/
+
+# Creating (or erasing) sample map file 
+echo -n "" > "${MAP_DIR}sample_map.txt"
+
+# Boucle pour parcourir tous les fichiers GVCF dans le chemin spécifié
+for file in ${GVCF_PATH}*.g.vcf.gz; do 
+   # Extraction du nom de base du fichier et écriture dans le fichier de mappage
+   echo -e $(basename "${file%.*}")"\t"${file} >> "${MAP_DIR}sample_map.txt"
+done
+
+### Splitting reference genome by super scaffold ###
+# Path 
+REF_INDEX=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.fai
+SEQ_LIST_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/
+
+echo "Processing of reference sequences"
+
+# Creating a directory for sequences list
+echo "Creating a directory for sequences list..."
+mkdir -p "$SEQ_LIST_DIR"
+
+# Extraction of reference sequence names and storage in a file
+echo "Extraction of reference sequence names and storage in a file..."
+cut -f1 "$REF_INDEX" > "${SEQ_LIST_DIR}/reference.sequences.list"
+
+### Using GenomicsDBImport ###
+# Paths to GenomicsDB files
+DB_PATH=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/GenomicsDB/
+TMP_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/tmp/
+INTERVALS_FILE="${SEQ_LIST_DIR}/reference.sequences.list" 
+
+
+echo "Starting GenomicsDBImport using ${INTERVALS_FILE}."
+
+gatk --java-options "-Xmx6g -Xms6g" \
+     GenomicsDBImport \
+     --genomicsdb-workspace-path "$DB_PATH" \
+     --batch-size 10 \
+     -L "$INTERVALS_FILE" \
+     --sample-name-map "${MAP_DIR}sample_map.txt" \
+     --tmp-dir "$TMP_DIR" \
+     --reader-threads 4 
+
+echo "GenomicsDBImport has completed."
+
+
+
