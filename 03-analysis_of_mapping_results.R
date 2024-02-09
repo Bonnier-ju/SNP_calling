@@ -7,6 +7,7 @@
 library(tidyr)
 library(ggplot2)
 library(dplyr)
+library(readr)
 
 setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/03-mapping_samples")
 
@@ -119,8 +120,8 @@ all_data <- do.call(rbind, lapply(stats_files, read_stats_file))
 # Analyse des données
 
 ## Résumé statistique des comptages de lectures par région
-summary_stats <- all_data %>%
-  group_by(Region) %>%
+summary_stats <- all_data
+  group_by(Region)
   summarise(MeanReadCount = mean(ReadCount), 
             MedianReadCount = median(ReadCount), 
             SDReadCount = sd(ReadCount),
@@ -144,9 +145,10 @@ ggplot(all_data, aes(x = Sample, y = ReadCount, fill = Region)) +
   geom_boxplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Comparaison des comptages de lectures entre les échantillons",
-       x = "Échantillon",
        y = "Comptage de lectures") +
   facet_wrap(~Region, scales = "free_y")  # Séparer les graphiques par région
+
+
 
 
 
