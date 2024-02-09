@@ -1,9 +1,12 @@
-
+###################################
 ####Analysis of mapping results####
+###################################
+
 
 # Load packages 
 library(tidyr)
 library(ggplot2)
+library(dplyr)
 
 setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/03-mapping_samples")
 
@@ -93,31 +96,61 @@ ggplot(flagstatData, aes(x = FileName, y = SecondaryMapped)) +
 
 
 
+###################################################################
+#### Analyse des fichiers BED pour la distribution des lectures####
 
 
-#############################################################
-# Analyse des fichiers BED pour la distribution des lectures#
-# Cette partie dépend des analyses spécifiques que vous souhaitez effectuer, par exemple, la densité des lectures par région.
-# Pour un exemple simple, on pourrait compter le nombre de lectures dans chaque région à partir des fichiers dans statsDir.
+# Définir le chemin vers le répertoire contenant les fichiers de statistiques
+stats_dir <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/03-mapping_samples/03-bed_analysis/"
 
-bedDir <- "/03-mapping_samples/03-bed_files/"
-statsDir <- "/03-mapping_samples/03-bed_analysis/"
+# Lister tous les fichiers de statistiques dans le répertoire
+stats_files <- list.files(stats_dir, pattern = "*.txt", full.names = TRUE)
 
-# Liste des fichiers de statistiques BED
-statsFiles <- list.files(statsDir, pattern = "*_stats.txt", full.names = TRUE)
-
-# Fonction pour lire les statistiques BED
-readBedStats <- function(file) {
-  data <- read.table(file, header = FALSE)
-  colnames(data) <- c("Count", "Region")
-  data$FileName <- basename(file)
+# Llire et préparer les données d'un fichier de statistiques
+read_stats_file <- function(file_path) {
+  data <- read.table(file_path, col.names = c("ReadCount", "Region"))
+  data$Sample <- gsub(".*/|_stats\\.txt$", "", file_path)  # 
   return(data)
 }
 
-# Appliquer la fonction à tous les fichiers et combiner les résultats
-bedStatsData <- do.call(rbind, lapply(statsFiles, readBedStats))
+# Lire les données de tous les fichiers et les combiner en un seul dataframe
+all_data <- do.call(rbind, lapply(stats_files, read_stats_file))
 
-# Afficher un résumé
-print(head(bedStatsData))
+# Analyse des données
+
+## Résumé statistique des comptages de lectures par région
+summary_stats <- all_data %>%
+  group_by(Region) %>%
+  summarise(MeanReadCount = mean(ReadCount), 
+            MedianReadCount = median(ReadCount), 
+            SDReadCount = sd(ReadCount),
+            MinReadCount = min(ReadCount),
+            MaxReadCount = max(ReadCount))
+
+print(summary_stats)
+
+## Visualisation de la distribution des comptages de lectures par région
+ggplot(all_data, aes(x = Region, y = ReadCount)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Distribution des comptages de lectures par région",
+       x = "Région",
+       y = "Comptage de lectures") +
+  scale_y_log10()  # Utiliser l'échelle logarithmique pour les comptages de lectures
+
+
+## Comparaison des comptages de lectures entre les échantillons
+ggplot(all_data, aes(x = Sample, y = ReadCount, fill = Region)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Comparaison des comptages de lectures entre les échantillons",
+       x = "Échantillon",
+       y = "Comptage de lectures") +
+  facet_wrap(~Region, scales = "free_y")  # Séparer les graphiques par région
+
+
+
+
+
 
 
