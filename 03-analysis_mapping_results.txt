@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p workq
-#SBATCH --time=01:00:00 #job time limit
+#SBATCH --time=10:00:00 #job time limit
 #SBATCH -J 03-analysis_mapping_results #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=10G #memory reservation
-#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
@@ -17,10 +17,11 @@ module purge
 module load bioinfo/samtools/1.19
 module load devel/python/Python-3.11.1
 module load bioinfo/bedtools/2.30.0
+module load bioinfo/MultiQC/1.14
 
 
 #Define destination folders
-DEST_DIR=~/work/Dicorynia/full_workflow/03-mapping/03-flagstat_files/
+#DEST_DIR=~/work/Dicorynia/full_workflow/03-mapping/03-flagstat_files/
 BED_DIR=~/work/Dicorynia/full_workflow/03-mapping/03-bed_files/
 STATS_DIR=~/work/Dicorynia/full_workflow/03-mapping/03-bed_analysis/
 
@@ -31,18 +32,18 @@ STATS_DIR=~/work/Dicorynia/full_workflow/03-mapping/03-bed_analysis/
 #number of reads mapper etc
 
 #Move to mapping results folder 
-cd ~/work/Dicorynia/full_workflow/03-mapping/
+#cd ~/work/Dicorynia/full_workflow/03-mapping/
 
 #Calculate and display various statistics summarizing the information contained in the FLAG fields of the BAM file. 
 #These statistics include the number of mapped, unmapped and duplicated reads, etc.
 
-for bamFile in *.bam
-do
+#for bamFile in *.bam
+#do
     # Processing flagstats analysis
-    samtools flagstat "$bamFile" > "${DEST_DIR}/${bamFile}_flagstat.txt" 
-done
+ #   samtools flagstat "$bamFile" > "${DEST_DIR}/${bamFile}_flagstat.txt" 
+#done
 
-echo "End of flagstat analysis"
+#echo "End of flagstat analysis"
 
 
 #Converting BAM files to BED files
@@ -58,7 +59,7 @@ done
 echo "End of converting BAM files to BED files" 
 
 
-# Simple analysis - compting read in each region 
+#### Simple analysis - compting read in each region ####
 # Give number of reads in each super-scaffold 
 
 cd ~/work/Dicorynia/test_subsamples/align_subsamples/
@@ -70,3 +71,17 @@ for bedFile in "$BED_DIR"/*.bed; do
 done
 
 echo "End of bed files statistics processing and end of scripts processing : well done !" 
+
+
+####Full analysis with MultiQC####
+
+ANALYSIS_DIR=~/work/Dicorynia/full_workflow/03-mapping/
+
+# Spécifiez le répertoire de sortie pour le rapport MultiQC
+REPORT_DIR=~/work/Dicorynia/full_workflow/03-mapping/03-multiQC_analysis/
+
+
+# Exécutez MultiQC sur le répertoire d'analyse
+multiqc $ANALYSIS_DIR --outdir $REPORT_DIR
+
+echo "Rapport MultiQC généré avec succès dans $REPORT_DIR"
