@@ -107,7 +107,7 @@ names(df_filt) <- c("SuperScaffold", "VariantCount")
 ggplot(df_filt, aes(x = reorder(SuperScaffold, -VariantCount), y = VariantCount)) +
   geom_bar(stat = "identity", fill = "#AE4C3C") +
   theme_minimal() +
-  labs(title = "Nombre de variants par super-scaffold (Qualité > 50)", 
+  labs(title = "Nombre de variants par super-scaffold (Qualité > 100)", 
        x = "Super-Scaffold", 
        y = "Nombre de Variants") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
