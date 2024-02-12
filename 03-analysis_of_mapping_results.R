@@ -146,8 +146,7 @@ ggplot(all_data, aes(x = Sample, y = ReadCount, fill = Region)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Comparaison des comptages de lectures entre les échantillons",
        y = "Comptage de lectures") +
-  facet_wrap(~Region, scales = "free_y")  # Séparer les graphiques par région
-
+  facet_wrap(~Region, scales = "free_y")
 
 
 
