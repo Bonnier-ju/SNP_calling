@@ -1,13 +1,14 @@
 #!/bin/bash
 #SBATCH -p workq
-#SBATCH --time=05:00:00 #job time limit
+#SBATCH --time=48:00:00 #job time limit
 #SBATCH -J 04.2-data_aggregation #job name
-#SBATCH -o /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/output_files/output-%x-%j.out #output file name
-#SBATCH -e /work/user/jbonnier/Dicorynia/test_subsamples/batch_test/error_files/error-%x-%j.out #error file name
-#SBATCH --mem=8G #memory reservation
-#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=7 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
+
 
 
 ######## Variant calling ########
@@ -20,15 +21,6 @@
 # 3. Joint genotyping__ Run `GenotypeGVCFs` on all of them together to create the raw SNP and indel VCFs that are usually emitted by the callers.
 
 
-#Clean work place 
-
-module purge 
-
-#Loading modules 
-
-module load devel/python/Python-3.11.1 devel/java/17.0.6
-module load bioinfo/GATK/4.2.6.1
-
 
 ###Data aggregation with GenomicsDBImport ###
 #GVCFs are consolidated into a GenomicsDB datastore in order to improve scalability and speedup the next step: joint genotyping.
@@ -40,55 +32,49 @@ module load bioinfo/GATK/4.2.6.1
 #GenomicsDB contains code to specialize TileDB for genomics applications, such as VCF parsing and INFO field annotation calculation.
 
 
-###Create sample map### 
+# Clean work place 
+module purge 
 
-# Paths to files 
-GVCF_PATH=~/work/Dicorynia/full_workflow/04-calling_variants/04.1-haplotype_caller_files/
-MAP_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/
+# Loading modules 
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+module load bioinfo/samtools/1.19
 
-# Creating (or erasing) sample map file 
-echo -n "" > "${MAP_DIR}sample_map.txt"
+# Define paths
+GVCF_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.1-haplotype_caller_files/
+AGGREGATION_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/
+REF_GENOME=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa
+SAMPLE_MAP="${AGGREGATION_DIR}sample_map.txt"
+DB_PATH="${AGGREGATION_DIR}GenomicsDB"
+TMP_DIR="${AGGREGATION_DIR}tmp"
+SEQ_LIST="${AGGREGATION_DIR}reference.sequences.list"
 
-# Boucle pour parcourir tous les fichiers GVCF dans le chemin spécifié
-for file in ${GVCF_PATH}*.g.vcf.gz; do 
-   # Extraction du nom de base du fichier et écriture dans le fichier de mappage
-   echo -e $(basename "${file%.*}")"\t"${file} >> "${MAP_DIR}sample_map.txt"
+# Ensure output directories exist
+mkdir -p "$AGGREGATION_DIR"
+mkdir -p "$DB_PATH"
+mkdir -p "$TMP_DIR"
+
+### Create sample map ### 
+echo -n "" > "$SAMPLE_MAP"
+
+for file in ${GVCF_DIR}*.g.vcf.gz; do 
+   echo -e $(basename "${file}" .g.vcf.gz)"\t${file}" >> "$SAMPLE_MAP"
 done
 
-### Splitting reference genome by super scaffold ###
-# Path 
-REF_INDEX=~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.fai
-SEQ_LIST_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/
+echo "Sample map created at $SAMPLE_MAP"
 
-echo "Processing of reference sequences"
+### Create list of reference sequences ###
+cut -f1 "${REF_GENOME}.fai" > "$SEQ_LIST"
+echo "Reference sequences list created at $SEQ_LIST"
 
-# Creating a directory for sequences list
-echo "Creating a directory for sequences list..."
-mkdir -p "$SEQ_LIST_DIR"
-
-# Extraction of reference sequence names and storage in a file
-echo "Extraction of reference sequence names and storage in a file..."
-cut -f1 "$REF_INDEX" > "${SEQ_LIST_DIR}/reference.sequences.list"
-
-### Using GenomicsDBImport ###
-# Paths to GenomicsDB files
-DB_PATH=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/GenomicsDB/
-TMP_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/tmp/
-INTERVALS_FILE="${SEQ_LIST_DIR}/reference.sequences.list" 
-
-
-echo "Starting GenomicsDBImport using ${INTERVALS_FILE}."
-
-gatk --java-options "-Xmx6g -Xms6g" \
-     GenomicsDBImport \
-     --genomicsdb-workspace-path "$DB_PATH" \
+### Data aggregation with GenomicsDBImport ###
+echo "Starting GenomicsDBImport..."
+gatk --java-options "-Xmx6g -Xms6g" GenomicsDBImport \
+     --genomicsdb-workspace-path "${DB_PATH}/my_database" \
      --batch-size 10 \
-     -L "$INTERVALS_FILE" \
-     --sample-name-map "${MAP_DIR}sample_map.txt" \
+     -L "$SEQ_LIST" \
+     --sample-name-map "$SAMPLE_MAP" \
      --tmp-dir "$TMP_DIR" \
-     --reader-threads 4 
+     --reader-threads 5 
 
-echo "GenomicsDBImport has completed."
-
-
-
+echo "GenomicsDBImport completed."
