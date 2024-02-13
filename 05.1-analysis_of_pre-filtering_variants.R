@@ -43,23 +43,6 @@ ggplot(site_quality, aes(x = QUAL)) +
   theme_minimal()
 
 ##### Visualisation des champs INFO #####
-#AC (Allele Count) : Le nombre d'occurrences d'un allèle alternatif dans les échantillons analysés. 
-#Pour les variants bialléliques, cela représente le nombre total d'occurrences de l'allèle non référence.
-#
-#AF (Allele Frequency) : La fréquence de l'allèle alternatif dans l'ensemble des échantillons. 
-#Cela donne une idée de la prévalence de l'allèle variant par rapport à l'allèle de référence dans la population étudiée.
-#
-#QD (Quality by Depth) : La qualité du variant divisée par la profondeur de couverture. 
-#Estimation de la confiance dans l'appel du variant en tenant compte de la profondeur de séquençage. 
-#Des valeurs élevées indiquent généralement une plus grande confiance.
-#
-#FS (Fisher Strand) : Le biais de strand, évalué à l'aide d'un test exact de Fisher. 
-#Mesure si les allèles variants sont distribués de manière égale entre les brins forward et reverse du séquençage. 
-#Des valeurs élevées peuvent indiquer un biais de séquençage, ce qui peut réduire la confiance dans l'appel du variant.
-#
-#SOR (Strand Odds Ratio) : Un autre indicateur du biais de strand, calculé comme le rapport des chances (odds ratio) 
-#de biais entre les brins forward et reverse. Comme pour le FS, des valeurs élevées peuvent suggérer 
-#un biais dans la distribution des allèles entre les brins, ce qui peut affecter la fiabilité de l'appel du variant.
 
 info_fields_long <- info_fields %>%
   gather(key = "Metric", value = "Value", AC, AF, QD, FS, SOR)
@@ -80,3 +63,21 @@ info_plot <- info_fields_long %>%
   theme(legend.position = "none") # Cache la légende
 
 print(info_plot)
+
+#AC (Allele Count) : Le nombre d'occurrences d'un allèle alternatif dans les échantillons analysés. 
+#Pour les variants bialléliques, cela représente le nombre total d'occurrences de l'allèle non référence.
+#
+#AF (Allele Frequency) : La fréquence de l'allèle alternatif dans l'ensemble des échantillons. 
+#Cela donne une idée de la prévalence de l'allèle variant par rapport à l'allèle de référence dans la population étudiée.
+#
+#QD (Quality by Depth) : La qualité du variant divisée par la profondeur de couverture. 
+#Estimation de la confiance dans l'appel du variant en tenant compte de la profondeur de séquençage. 
+#Des valeurs élevées indiquent généralement une plus grande confiance.
+#
+#FS (Fisher Strand) : Le biais de strand, évalué à l'aide d'un test exact de Fisher. 
+#Mesure si les allèles variants sont distribués de manière égale entre les brins forward et reverse du séquençage. 
+#Des valeurs élevées peuvent indiquer un biais de séquençage, ce qui peut réduire la confiance dans l'appel du variant.
+#
+#SOR (Strand Odds Ratio) : Un autre indicateur du biais de strand, calculé comme le rapport des chances (odds ratio) 
+#de biais entre les brins forward et reverse. Comme pour le FS, des valeurs élevées peuvent suggérer 
+#un biais dans la distribution des allèles entre les brins, ce qui peut affecter la fiabilité de l'appel du variant.
