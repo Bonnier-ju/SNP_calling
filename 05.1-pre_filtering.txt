@@ -1,0 +1,104 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=04:00:00 #job time limit
+#SBATCH -J 05.1-variants_filtering #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=5G #memory reservation
+#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+##### Variants filtering #####
+
+####Differents steps of variants pre-filtering : 
+# 1 - Limit data to biallelic variants using Bcftool 
+# 2 - Limit data to SNP using GATK
+# 3 - Preliminary analysis by VCFtools
+
+
+
+#Clean work place 
+module purge 
+
+#Loading modules 
+module load bioinfo/Bcftools/1.9
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+module load bioinfo/samtools/1.14
+module load bioinfo/VCFtools/0.1.16
+
+# Define constants
+INPUT_VCF="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/joint_genotyping.vcf.gz"
+BIALLELIC_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/joint_genotyping.biallelic.vcf.gz"
+BIALLELIC_SNP_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/joint_genotyping.biallelic.snp.vcf.gz"
+SNP_COUNT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/snp_count_summary.txt"
+REF="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa"
+
+# Initialize SNP count file and write headers
+echo -e "Stage\tNumber of SNPs" > "$SNP_COUNT_FILE"
+
+# Function to add SNP counts to summary file
+function add_snp_count {
+    local label=$1
+    local vcf=$2
+    local count=$(bcftools stats "$vcf" | grep "number of SNPs:" | cut -d":" -f2)
+    echo -e "${label}\t${count}" >> "$SNP_COUNT_FILE"
+}
+
+# Initial SNP count
+add_snp_count "Initial" "$INPUT_VCF"
+
+# 1 - Limit data to biallelic variants using Bcftools
+bcftools view --max-alleles 2 --threads 2 "${INPUT_VCF}" | bgzip -c --threads 2 > "${BIALLELIC_VCF}"
+add_snp_count "Biallelic" "$BIALLELIC_VCF"
+
+# 2 - Limit data to SNP using GATK
+
+# Index the biallelic VCF file
+echo "Indexing biallelic VCF..."
+gatk IndexFeatureFile -I "$BIALLELIC_VCF"
+
+gatk --java-options "-Xmx4g" SelectVariants \
+     -R "$REF" \
+     -V "$BIALLELIC_VCF" \
+     --select-type-to-include SNP \
+     -O "$BIALLELIC_SNP_VCF"
+add_snp_count "Biallelic SNP" "$BIALLELIC_SNP_VCF"
+
+# Index the SNP VCF file
+echo "Indexing SNP VCF..."
+gatk IndexFeatureFile -I "$BIALLELIC_SNP_VCF"
+
+echo "SNP filtering and statistics calculation completed. Summary written to $SNP_COUNT_FILE."
+
+
+
+###Perform preliminary analyses using vcftools
+
+# Define file paths
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/joint_genotyping.biallelic.snp.vcf.gz"
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/"
+
+
+# Calculate the percentage of missing data per individual
+vcftools --gzvcf "$INPUT_VCF" --missing-indv --out "${OUTPUT_DIR}missing_indv"
+
+# Calculate the percentage of missing data per site
+vcftools --gzvcf "$INPUT_VCF" --missing-site --out "${OUTPUT_DIR}missing_site"
+
+# Extract quality scores for each site
+vcftools --gzvcf "$INPUT_VCF" --site-quality --out "${OUTPUT_DIR}site_quality"
+
+# Extract specific INFO fields for further analysis
+vcftools --gzvcf "$INPUT_VCF" \
+  --get-INFO AC \
+  --get-INFO AF \
+  --get-INFO QD \
+  --get-INFO FS \
+  --get-INFO SOR \
+  --out "${OUTPUT_DIR}INFO_fields"
+
+echo "Preliminary analyses completed. Results saved in ${OUTPUT_DIR}."
+
