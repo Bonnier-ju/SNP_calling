@@ -1,0 +1,63 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=48:00:00 #job time limit
+#SBATCH -J 04.3-joint_genotyping #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+######## Variant calling ########
+
+#`GATK` (Genome Analysis ToolKit) properly pronounced "Gee-ay-tee-kay" (/dʒi•eɪ•ti•keɪ/) and not "Gat-kay" (/ɡæt•keɪ/) 
+# has apparently similar performance to other variant callers. 
+# 3 steps (following Sylvain Schmitt "Symcapture") 
+# 1. Variant calling__ Run the `HaplotypeCaller` on each sample's BAM files to create single-sample gVCFs using the `.g.vcf` extension for the output file.
+# 2. Data aggregation__ Aggregate the GVCF files and feed in one GVCF with `GenomicsDBImport` to be genotyped
+# 3. Joint genotyping__ Run `GenotypeGVCFs` on all of them together to create the raw SNP and indel VCFs that are usually emitted by the callers.
+
+
+#Clean work place 
+
+module purge 
+
+#Loading modules 
+
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+
+
+
+###Joint Genotyping with GenotypeGVCFs###
+#This tool is designed to perform joint genotyping on a single input, which may contain one or many samples. 
+#In any case, the input samples must possess genotype likelihoods produced by HaplotypeCaller with `-ERC GVCF` or `-ERC BP_RESOLUTION`.
+
+#Input
+#The GATK4 GenotypeGVCFs tool can take only one input track. Options are :
+#1) a single single-sample GVCF 
+#2) a single multi-sample GVCF created by CombineGVCFs  
+#3) a GenomicsDB workspace created by GenomicsDBImport. 
+#A sample-level GVCF is produced by HaplotypeCaller with the `-ERC GVCF` setting
+
+
+### Joint Genotyping with GenotypeGVCFs ###
+
+# Path
+REF_GENOME="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa"
+DB_PATH="/work/user/jbonnier/Dicorynia/full_workflow/04-calling_variants/04.2-data_aggregation/GenomicsDB/my_database/"
+OUTPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/04-calling_variants/04.3-joint_genotyping/joint_genotyping.vcf.gz"
+TMP_DIR="/work/user/jbonnier/Dicorynia/full_workflow/04-calling_variants/04.3-joint_genotyping/tmp/"
+
+echo "Début du génotypage conjoint."
+
+# Exécution de GenotypeGVCFs
+gatk --java-options "-Xmx6g" GenotypeGVCFs \
+   -R "$REF_GENOME" \
+   -V gendb://"$DB_PATH" \
+   -O "$OUTPUT_VCF" \
+   --tmp-dir "$TMP_DIR"
+
+echo "Génotypage conjoint terminé."
