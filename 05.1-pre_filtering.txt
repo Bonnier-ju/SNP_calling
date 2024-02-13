@@ -10,7 +10,7 @@
 #SBATCH --mail-type=END,FAIL
 
 
-##### Variants filtering #####
+##### Variants pre-filtering #####
 
 ####Differents steps of variants pre-filtering : 
 # 1 - Limit data to biallelic variants using Bcftool 
