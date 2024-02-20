@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -p workq
-#SBATCH --time=48:00:00 #job time limit
+#SBATCH -p unlimitq
+#SBATCH --time=400:00:00 #job time limit
 #SBATCH -J 04.3-joint_genotyping #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=10G #memory reservation
-#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mem=40G #memory reservation
+#SBATCH --cpus-per-task=12 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
@@ -54,7 +54,7 @@ TMP_DIR="/work/user/jbonnier/Dicorynia/full_workflow/04-calling_variants/04.3-jo
 echo "Début du génotypage conjoint."
 
 # Exécution de GenotypeGVCFs
-gatk --java-options "-Xmx6g" GenotypeGVCFs \
+gatk --java-options "-Xmx38g" GenotypeGVCFs \
    -R "$REF_GENOME" \
    -V gendb://"$DB_PATH" \
    -O "$OUTPUT_VCF" \
