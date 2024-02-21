@@ -8,6 +8,18 @@ base_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Pop
 # Load population information from a CSV file
 pop_info <- read_csv("Population_info.csv")
 
+###CSV format files### 
+#SampleID,Pop
+#Ind1,PopulationA
+#Ind2,PopulationB
+#Ind3,PopulationA
+#Ind4,PopulationC
+#Ind5,PopulationB
+#...
+
+
+
+
 # Analyzing missing data by individual
 # Load the missing data statistics for individuals
 missing_indv_path <- file.path(base_path, "all.biallelic.snp.filtered.imiss")
