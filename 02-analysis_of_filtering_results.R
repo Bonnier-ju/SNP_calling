@@ -15,35 +15,42 @@ log_dir <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Popul
 # All log files in the folder
 log_files <- list.files(log_dir, pattern = "\\.log$", full.names = TRUE)
 
-# Read only one log file
-process_log_file <- function(file_path) {
-  lines <- read_lines(file_path)
 
+process_log_file <- function(file_path) {
+  lines <- readr::read_lines(file_path)
   
-  # Data extraction
+  # Extraction des données
   total_reads_passed <- str_extract(string = lines[str_detect(lines, "reads passed filter")], pattern = "\\d+")
   failed_read_lq <- str_extract(string = lines[str_detect(lines, "reads failed due to low quality")], pattern = "\\d+")
   failed_read_N <- str_extract(string = lines[str_detect(lines, "reads failed due to too many N")], pattern = "\\d+")
   failed_read_short <- str_extract(string = lines[str_detect(lines, "reads failed due to too short")], pattern = "\\d+")
   reads_adapters_trimmed <- str_extract(string = lines[str_detect(lines, "reads with adapter trimmed")], pattern = "\\d+")
   based_adapters_trimmed <- str_extract(string = lines[str_detect(lines, "bases trimmed due to adapters")], pattern = "\\d+")
-  duplication_rates <- str_extract(string = lines[str_detect(lines, "Duplication rate")], pattern = "\\d+")
- 
+  duplication_rates <- str_extract(string = lines[str_detect(lines, "Duplication rate")], pattern = "\\d+\\.?\\d*")
+  
+  # Vérification et correction pour s'assurer que toutes les variables ont une longueur de 1
+  variables <- list(total_reads_passed, failed_read_lq, failed_read_N, failed_read_short, reads_adapters_trimmed, based_adapters_trimmed, duplication_rates)
+  variables <- lapply(variables, function(x) if(is.na(x) || length(x) == 0) NA else as.numeric(x))
   
   data.frame(
     FileName = basename(file_path),
-    TotalReads_passed = as.numeric(total_reads_passed),
-    Failedreads_lq = as.numeric(failed_read_lq),
-    Failedreads_N = as.numeric(failed_read_N),
-    Failedread_short = as.numeric(failed_read_short),
-    Adapters_trimmed_reads = as.numeric(reads_adapters_trimmed),
-    Adapters_trimmed_base = as.numeric(based_adapters_trimmed),
-    Duplication_rates = as.numeric(duplication_rates)
+    TotalReads_passed = variables[[1]],
+    Failedreads_lq = variables[[2]],
+    Failedreads_N = variables[[3]],
+    Failedread_short = variables[[4]],
+    Adapters_trimmed_reads = variables[[5]],
+    Adapters_trimmed_base = variables[[6]],
+    Duplication_rates = variables[[7]]
   )
 }
 
+
 # Apply function in all files and combine results
 log_data <- map_df(log_files, process_log_file)
+
+log_data <- log_data %>%
+  mutate(ShortFileName = substr(FileName, 1, 7))
+
 
 # Data summary
 print(log_data)
@@ -55,11 +62,11 @@ write_csv(log_data, file.path(log_dir, "summary_log_data.csv"))
 #Read Passed Filter: This term refers to sequence reads that have passed the quality and filtering criteria specific to the sequencing platform. 
 #Reads that "pass the filter" are considered to be of good quality and suitable for further analysis.
 
-ggplot(log_data, aes(x = FileName, y = TotalReads_passed, fill = FileName)) +
+ggplot(log_data, aes(x = ShortFileName, y = TotalReads_passed, fill = FileName)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis_d() + # Utiliser une échelle de couleurs
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 8),
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 11),
         legend.position = "none",
         panel.grid.major.y = element_line(color = "grey90")) +
   labs(title = "Reads passed by sample",
@@ -69,11 +76,11 @@ ggplot(log_data, aes(x = FileName, y = TotalReads_passed, fill = FileName)) +
 
 
 #Plot for duplication rates 
-ggplot(log_data, aes(x = FileName, y = Duplication_rates, fill = FileName)) +
+ggplot(log_data, aes(x = ShortFileName, y = Duplication_rates, fill = FileName)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis_d() + 
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 8),
+  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 11),
         legend.position = "none", 
         panel.grid.major.y = element_line(color = "black")) +
   labs(title = "Duplication rates (percent)",
@@ -95,7 +102,7 @@ log_data_long <- log_data %>%
                names_to = "Measurement",
                values_to = "Value")
 
-ggplot(log_data_long, aes(x = FileName, y = Value, fill = Measurement)) +
+ggplot(log_data_long, aes(x = ShortFileName, y = Value, fill = Measurement)) +
   geom_bar(stat = "identity", position = position_dodge()) +
   theme_minimal() +
   labs(title = "Failed Reads Analysis",
@@ -106,11 +113,11 @@ ggplot(log_data_long, aes(x = FileName, y = Value, fill = Measurement)) +
 
 
 #Plots for trimmed adapters
-ggplot(log_data, aes(x = FileName, y = Adapters_trimmed_reads, fill = FileName)) +
+ggplot(log_data, aes(x = ShortFileName, y = Adapters_trimmed_reads, fill = FileName)) +
   geom_bar(stat = "identity") +
   scale_fill_viridis_d() + # Utiliser une échelle de couleurs
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 8),
+  theme(axis.text.x = element_text(angle = 70, hjust = 1, size = 11),
         legend.position = "none",
         panel.grid.major.y = element_line(color = "grey90")) +
   labs(title = "Adaptaters trimmed",
