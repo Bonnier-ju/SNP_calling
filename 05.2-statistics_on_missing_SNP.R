@@ -19,7 +19,6 @@ pop_info <- read_csv("Population_info.csv")
 
 
 
-
 # Analyzing missing data by individual
 # Load the missing data statistics for individuals
 missing_indv_path <- file.path(base_path, "all.biallelic.snp.filtered.imiss")

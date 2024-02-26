@@ -13,22 +13,22 @@ library(ggplot2)
 output_dir <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/05-filtering_variants/05.1-pre_filtering/Input_files/"
 
 # Charger les données
-missing_indv <- read_tsv(paste0(output_dir, "missing_indv.imiss.txt"), col_names = TRUE)
+missing_indv <- read_tsv(paste0(output_dir, "missing_indv.imiss"), col_names = TRUE)
 missing_site <- read_tsv(paste0(output_dir, "missing_site.lmiss"), col_names = TRUE)
 site_quality <- read_tsv(paste0(output_dir, "site_quality.lqual"), col_names = TRUE)
-info_fields <- read_tsv(paste0(output_dir, "INFO_fields.INFO.txt"), col_names = TRUE)
+info_fields <- read_tsv(paste0(output_dir, "INFO_fields.INFO"), col_names = TRUE)
 
 # Visualisation du taux de données manquantes par individu
 ggplot(missing_indv, aes(x = N_MISS)) +
-  geom_histogram(binwidth = 0.01, fill = "skyblue", color = "black") +
-  labs(title = "Taux de données manquantes par individu",
-       x = "Taux de données manquantes",
-       y = "Nombre d'individus") +
+  geom_histogram(fill = "skyblue", color = "black") +
+  labs(title = "Missing data per individuals",
+       x = "Missing data",
+       y = "Number of individuals") +
   theme_minimal()
 
 # Visualisation du taux de données manquantes par site
 ggplot(missing_site, aes(x = N_MISS)) +
-  geom_histogram(binwidth = 0.01, fill = "pink", color = "black") +
+  geom_histogram(fill = "pink", color = "black") +
   labs(title = "Taux de données manquantes par site",
        x = "Taux de données manquantes",
        y = "Nombre de sites") +
