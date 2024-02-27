@@ -1,0 +1,82 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=04:00:00 #job time limit
+#SBATCH -J 05.2-normal_filtering #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Variants normal-filtering #####
+######################################
+
+echo "Starting the SNP variant filtering script."
+
+
+#Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/Bcftools/1.9
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+
+
+# Input file path
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/joint_genotyping.biallelic.snp.vcf.gz"
+INTERMEDIATE_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.2-normal_filtering/intermediate_filtered.vcf.gz"
+FILTER_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.2-normal_filtering/normal_filtered.vcf.gz"
+FILTER_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.2-normal_filtering/normal_filtered"
+
+##### Variant Filtration with GATK #####
+#########################################
+
+echo "Filtering variants with GATK..."
+
+gatk VariantFiltration \
+  -V $INPUT_VCF \
+  --filter-expression "QUAL < 50.0 || QD < 2.0 || FS > 60.0 || SOR > 3.0" \
+  --filter-name "FAIL" \
+  -O $INTERMEDIATE_VCF
+
+echo "End of variant filtration with GATK"
+
+gatk SelectVariants \
+  -V $INTERMEDIATE_VCF \
+  --exclude-filtered \
+  -O $FILTER_VCF  
+
+echo "Filtered VCF files of GATK created"
+ 
+#QUAL => quality criterion for filtering variants, a phredian (logarithmic) measure of confidence that the variant (SNP, insertion, deletion, etc.) 
+#is real, rather than a sequencing or alignment error. The higher the QUAL value, the greater the confidence in the presence of the variant. 
+#A QUAL of 30 corresponds to a probability of error of 1 in 1000, or 99.9% confidence in the variant. 
+#This is a convention commonly used in the processing of high-throughput sequencing data, but the specific threshold may vary according 
+#to the specific needs of the analysis or the recommendations of the guidelines for a particular study.
+
+echo "Filtration with GATK complete, FILTER file created."
+
+# Count number of variant after processing
+VARIANT_COUNT=$(bcftools view -H $FILTER_VCF | wc -l)
+
+echo "Number of variants conserved after filtration with GATK: $VARIANT_COUNT"
+
+# Index the filtered VCF file
+
+echo "Indexing FILTER_VCF"
+gatk IndexFeatureFile -I $FILTER_VCF
+echo "Indexation completed on VCF filtred file."
+
+
+# Generate statistics on the filtered VCF
+
+bcftools stats --threads 7 --verbose $FILTER_VCF > ${FILTER_OUTPUT}_stats.txt
+echo "Statistics generated on the filtered vcf."
+
+echo "End of normal filtering script" 
+
+

@@ -1,0 +1,76 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=04:00:00 #job time limit
+#SBATCH -J 05.3-missing_filtering #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Variants normal-filtering #####
+######################################
+
+echo "Starting the SNP missing filtering script."
+
+
+#Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/PLINK/2.00a4 
+
+# Input file path
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.2-normal_filtering/normal_filtered.vcf.gz"
+ALLELE_FREQ="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/allele_frequencies"
+BINARY_FILES="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/binary"
+FINAL_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_filtered"
+
+
+#Add ID to variant and converting into binary file (.bed, .bim, .fam)
+echo "Adding ID to variant and converting to binary ..." 
+plink2 --threads 8 --memory 20000 \
+	--vcf $INPUT_VCF \
+	--set-missing-var-ids @:#\$1,\$2 \
+	--make-bed \
+	--allow-extra-chr \
+	--out $BINARY_FILES
+echo "Converting done" 
+
+# Generate allele frequency file using PLINK
+echo "Generating allele frequency file..."
+plink2 --threads 8 --memory 20000 \
+	--bfile $BINARY_FILES \
+	--freq --allow-extra-chr \
+	--out $ALLELE_FREQ
+echo "Allele frequency file generated" 
+
+
+#Filtering missing value 
+echo "Filtering missing value ..."
+plink2 --threads 8 --memory 20000 \
+	--bfile $BINARY_FILES \
+	--allow-extra-chr --mind 0.1 --geno 0.05 --make-bed \
+	--out ${FINAL_OUTPUT} 
+
+echo "Filtering missing data completed."
+
+#Filtering with --mind 0.1 => excluding individual with more than 10% of missing data
+#Filtering with --geno 0.1 => excluding SNP with more than 10% of missing genotype 
+
+
+##### Missing Data Analysis and Other Statistical Analyses #####
+#################################################################
+
+
+echo "Performing missing data analysis and statistical analyses..."
+
+plink2 --threads 8 --memory 20000 \
+  --bfile ${FINAL_OUTPUT} \
+  --allow-extra-chr --missing --het --pca --read-freq $ALLELE_FREQ.afreq --geno-counts \
+  --out ${FINAL_OUTPUT}_stats
+
+echo "Missing data filtering and statistical analyses are completed."
