@@ -5,6 +5,7 @@
 
 library(tidyverse)
 library(ggplot2)
+library(dplyr)
 
 
 ################# Pre_filtering of variants ######################
@@ -26,21 +27,22 @@ ggplot(missing_indv, aes(x = N_MISS)) +
        y = "Number of individuals") +
   theme_minimal()
 
-# Visualisation du taux de données manquantes par site
-ggplot(missing_site, aes(x = N_MISS)) +
-  geom_histogram(fill = "pink", color = "black") +
-  labs(title = "Taux de données manquantes par site",
-       x = "Taux de données manquantes",
-       y = "Nombre de sites") +
-  theme_minimal()
 
-# Visualisation de la qualité des sites
-ggplot(site_quality, aes(x = QUAL)) +
-  geom_histogram(binwidth = 1, fill = "lightgreen", color = "black") +
-  labs(title = "Qualité des sites",
-       x = "Qualité",
-       y = "Nombre de sites") +
-  theme_minimal()
+# Calculate the average quality by sample
+quality_avg_by_scaffold <- site_quality %>%
+  group_by(CHROM) %>%
+  summarise(Mean_QUAL = mean(QUAL, na.rm = TRUE)) # Calculate the average, excluding missing values
+
+# Visualize the average quality by sample
+ggplot(quality_avg_by_scaffold, aes(x = CHROM, y = Mean_QUAL)) +
+  geom_bar(stat = "identity", fill = "cornflowerblue", color = "black") +
+  labs(title = "Average Quality by Scaffold",
+       x = "Scaffold",
+       y = "Average Quality") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Angle x-axis labels for better readability
+
+
 
 ##### Visualisation des champs INFO #####
 
@@ -49,7 +51,7 @@ info_fields_long <- info_fields %>%
 
 info_plot <- info_fields_long %>%
   ggplot(aes(x = Value, fill = Metric)) +
-  geom_histogram(binwidth = 0.1, color = "black") +
+  geom_histogram(binwidth = 30, color = "black") +
   scale_fill_manual(values = c(AC = "#98FB98", AF = "aquamarine3", QD = "#458B74", FS = "#9BCD9B", SOR = "olivedrab3")) +
   facet_wrap(~ Metric, scales = "free_x", labeller = labeller(Metric = c(AC = "Allele Count",
                                                                          AF = "Allele Frequency",
