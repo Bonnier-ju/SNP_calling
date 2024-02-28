@@ -1,0 +1,68 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=10:00:00 #job time limit
+#SBATCH -J 03.3-coverage_analysis #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+#Clean work place 
+module purge 
+
+#Loading modules 
+module load bioinfo/samtools/1.19
+module load devel/python/Python-3.11.1
+module load bioinfo/bedtools/2.30.0
+module load statistics/R/4.2.2
+module load bioinfo/Qualimap/31-08-20
+
+# Définir le répertoire de travail
+WORKDIR=/work/user/jbonnier/Dicorynia/full_workflow/03-mapping/
+
+# Définir le répertoire de sortie pour les analyses de couverture
+OUTPUT_DIR=/work/user/jbonnier/Dicorynia/full_workflow/03-mapping/03.3-coverage_analysis/
+cd $WORKDIR
+
+# Créer un fichier unique pour les résultats de couverture
+COVERAGE_SUMMARY_FILE=${OUTPUT_DIR}coverage_summary.txt
+echo "Sample\tAverage Coverage" > $COVERAGE_SUMMARY_FILE
+
+# Liste des fichiers BAM
+BAMFILES=($(ls *.bam))
+
+# Initialiser la somme de la couverture et le compteur d'échantillons
+TOTAL_COVERAGE=0
+SAMPLE_COUNT=0
+
+# Itérer sur chaque fichier BAM
+for BAMFILE in "${BAMFILES[@]}"; do
+    # Nom sans l'extension
+    SAMPLE_NAME=$(basename $BAMFILE .bam)
+
+    # Calcul de la couverture globale avec SAMtools et ajout des résultats au fichier de résumé
+    AVG_COV=$(samtools depth -a $BAMFILE | awk '{sum+=$3} END { print sum/NR}')
+    echo -e "${SAMPLE_NAME}\t${AVG_COV}" >> $COVERAGE_SUMMARY_FILE
+
+    # Accumuler la couverture pour le calcul de la moyenne
+    TOTAL_COVERAGE=$(echo "$TOTAL_COVERAGE + $AVG_COV" | bc)
+    SAMPLE_COUNT=$((SAMPLE_COUNT + 1))
+
+    # Analyse de qualité avec QualiMap et stockage du rapport dans le répertoire spécifié
+    SAMPLE_OUTPUT_DIR=${OUTPUT_DIR}${SAMPLE_NAME}
+    mkdir -p $SAMPLE_OUTPUT_DIR
+    qualimap bamqc -bam $BAMFILE -outdir ${SAMPLE_OUTPUT_DIR}/${SAMPLE_NAME}_qualimap_report
+
+    echo "Analyse terminée pour $SAMPLE_NAME"
+done
+
+# Calculer la couverture moyenne de tous les échantillons
+if [ $SAMPLE_COUNT -gt 0 ]; then
+    OVERALL_AVG_COV=$(echo "scale=2; $TOTAL_COVERAGE / $SAMPLE_COUNT" | bc)
+    echo -e "Overall Average Coverage:\t$OVERALL_AVG_COV" >> $COVERAGE_SUMMARY_FILE
+    echo "La couverture moyenne globale a été calculée et ajoutée à $COVERAGE_SUMMARY_FILE."
+else
+    echo "Aucun échantillon trouvé. Aucune moyenne calculée."
+fi
