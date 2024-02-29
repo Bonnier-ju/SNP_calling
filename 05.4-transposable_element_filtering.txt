@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=10:00:00 #job time limit
+#SBATCH -J TE_filtering #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/TE_filtering_%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/TE_filtering_%x-%j.err #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #number of CPUs
+
+##### Transposable element filtering #####
+
+echo "Starting transposable element filtering"
+
+# Clean the work environment
+module purge
+module load bioinfo/BEDOPS/2.4.41
+module load bioinfo/Bcftools/1.9
+module load bioinfo/PLINK/2.00a4 
+module load devel/python/Python-3.11.1
+module load bioinfo/bedtools/2.30.0
+
+# Define file paths
+GENOME_GFF_FILE="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.out.gff.gz"
+TE_BED_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/transposable_elements.bed"
+PLINK_FILES_PREFIX="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_filtered"
+OUTPUT_TE_FILTER_PREFIX="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/snp_in_te_filtered"
+
+# Convert GFF to BED
+echo "Converting GFF to BED..."
+zcat $GENOME_GFF_FILE | gff2bed > $TE_BED_FILE
+echo "Conversion from GFF to BED completed."
+
+# Filter SNPs based on transposable elements using bedtools
+echo "Filtering SNPs based on transposable elements..."
+bedtools intersect -a ${PLINK_FILES_PREFIX}.bed -b $TE_BED_FILE -header > ${OUTPUT_TE_FILTER_PREFIX}.bed
+echo "Filtering SNPs based on transposable elements completed."
+
+# Convert filtered SNPs back to PLINK format
+echo "Converting filtered SNPs back to PLINK format..."
+plink2 --bed ${OUTPUT_TE_FILTER_PREFIX}.bed --bim ${PLINK_FILES_PREFIX}.bim --fam ${PLINK_FILES_PREFIX}.fam --make-bed --out ${OUTPUT_TE_FILTER_PREFIX}
+echo "Conversion to PLINK format completed."
+
+# Convert the filtered PLINK binary format to VCF
+echo "Converting filtered PLINK format to VCF..."
+plink2 --bfile ${OUTPUT_TE_FILTER_PREFIX} --recode vcf bgz --out ${OUTPUT_TE_FILTER_PREFIX}
+echo "Conversion to VCF format completed."
+
+# Count the number of SNPs in the final VCF file
+echo "Counting SNPs in the final VCF file..."
+VCF_COUNT=$(bcftools view -H ${OUTPUT_TE_FILTER_PREFIX}.vcf.gz | wc -l)
+echo "Number of SNPs after transposable element filtering: $VCF_COUNT"
+
+echo "Transposable element SNP filtering process completed."
