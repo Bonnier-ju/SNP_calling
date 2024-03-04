@@ -30,6 +30,17 @@ pca_data <- read_delim(file.path(base_path, "missing_filtered_stats.eigenvec"),
                        delim = "\t") # Read PCA results with a tab delimiter
 population_info <- read_csv(population_info_path) # Read population info, assuming CSV format
 
+#Variance %
+eigenvalues <- read.table("missing_filtered_stats.eigenval", header = FALSE)
+eigenvalues <- eigenvalues$V1
+
+total_variance <- sum(eigenvalues)
+percent_variance <- (eigenvalues / total_variance) * 100
+
+pc1_percent <- percent_variance[1]
+pc2_percent <- percent_variance[2]
+pc3_percent <- percent_variance[3]
+
 # Prepare PCA data for merging by renaming IID to SampleID
 # and creating a new column with the first 7 letters of each SampleID
 pca_data <- pca_data %>%
@@ -52,7 +63,7 @@ my_colors <- c("Apatou" = "#8B2500", "Acarouany" = "#CD3700",  "Piste_St_Elie" =
                "Saut_Lavilette" = "#1874CD",  "St_georges" = "dodgerblue4")
 
 # Visualisation PCA avec ggplot2, en utilisant la palette de couleurs personnalisée
-ggplot(pca_data, aes(x = PC1, y = PC2, label = SampleID_short, color = Pop)) +
+ggplot(pca_data, aes(x = PC2, y = PC3, label = SampleID_short, color = Pop)) +
   geom_point() + 
   geom_text_repel(size = 3) +
   #stat_ellipse(type = "t", level = 0.95) +
@@ -60,8 +71,8 @@ ggplot(pca_data, aes(x = PC1, y = PC2, label = SampleID_short, color = Pop)) +
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_minimal() +
   labs(title = "PCA Plot", 
-       x = "PC1", 
-       y = "PC2", 
+       x = paste("PC2 (", round(pc2_percent, 2), "%)", sep=""), 
+       y = paste("PC3 (", round(pc3_percent, 2), "%)", sep=""),
        color = "Population") + 
   scale_color_manual(values = my_colors) + # Utiliser les couleurs définies manuellement
   theme(legend.position = "right", legend.title = element_text(face = "bold"))
