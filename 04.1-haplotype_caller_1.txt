@@ -1,0 +1,51 @@
+#!/bin/bash
+#SBATCH -p unlimitq
+#SBATCH --time=240:00:00 #job time limit
+#SBATCH -J 04.1-haplotype_caller_1 #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=30G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+######## Variant calling ########
+
+# Clean work place 
+module purge 
+
+# Loading modules 
+module load devel/python/Python-3.11.1 devel/java/17.0.6
+module load bioinfo/GATK/4.2.6.1
+module load bioinfo/samtools/1.19
+
+# Define the BAM files to process
+BAM_FILES=(
+    "DBR_AFDOSDA_HNWVMDSX3_UDI027_sort.bam"
+	)
+
+   
+# Define output directory
+OUTPUT_DIR=~/work/Dicorynia/full_workflow/04-calling_variants/04.1-haplotype_caller_files/
+
+
+# Index BAM files and run HaplotypeCaller
+cd ~/work/Dicorynia/full_workflow/03-mapping/
+echo "Starting BAM file processing..."
+
+for bamFile in "${BAM_FILES[@]}"; do
+    echo "Indexing $bamFile..."
+    samtools index "$bamFile"
+
+    baseName=$(basename "$bamFile" .bam)
+    outputFile="${OUTPUT_DIR}/${baseName}2.g.vcf.gz"
+
+    echo "Processing $bamFile with HaplotypeCaller..."
+    gatk --java-options "-Xms30G -Xmx30G -XX:ParallelGCThreads=2" HaplotypeCaller \
+         -R ~/work/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa \
+         -I "$bamFile" \
+         -O "$outputFile" \
+         -ERC GVCF
+done
+
+echo "End of haplotype_caller processing for script 1"

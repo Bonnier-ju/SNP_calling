@@ -4,8 +4,8 @@
 #SBATCH -J 04.2-data_aggregation #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=10G #memory reservation
-#SBATCH --cpus-per-task=7 #ncpu on the same node
+#SBATCH --mem=30G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
@@ -69,12 +69,12 @@ echo "Reference sequences list created at $SEQ_LIST"
 
 ### Data aggregation with GenomicsDBImport ###
 echo "Starting GenomicsDBImport..."
-gatk --java-options "-Xmx6g -Xms6g" GenomicsDBImport \
+gatk --java-options "-Xmx28g -Xms28g" GenomicsDBImport \
      --genomicsdb-workspace-path "${DB_PATH}/my_database" \
      --batch-size 10 \
      -L "$SEQ_LIST" \
      --sample-name-map "$SAMPLE_MAP" \
      --tmp-dir "$TMP_DIR" \
-     --reader-threads 5 
+     --reader-threads 10 
 
 echo "GenomicsDBImport completed."

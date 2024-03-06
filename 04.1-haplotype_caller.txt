@@ -65,6 +65,7 @@ do
          -I "$bamFile" \
          -O "$outputFile" \
          -ERC GVCF
+	echo "Fin de traitment $bamFile"
 done
 
 echo "End of haplotype_caller processing" 

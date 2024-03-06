@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p workq
-#SBATCH --time=04:00:00 #job time limit
+#SBATCH --time=10:00:00 #job time limit
 #SBATCH -J 05.1-variants_filtering #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=5G #memory reservation
-#SBATCH --cpus-per-task=4 #ncpu on the same node
+#SBATCH --mem=15G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
@@ -30,7 +30,7 @@ module load bioinfo/samtools/1.14
 module load bioinfo/VCFtools/0.1.16
 
 # Define constants
-INPUT_VCF="/work/user/jbonnier/Dicorynia/test_subsamples/variants_calling/joint_genotyping.vcf.gz"
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/04-calling_variants/04.3-joint_genotyping/joint_genotyping.vcf.gz"
 BIALLELIC_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/joint_genotyping.biallelic.vcf.gz"
 BIALLELIC_SNP_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/joint_genotyping.biallelic.snp.vcf.gz"
 SNP_COUNT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.1-pre_filtering/snp_count_summary.txt"

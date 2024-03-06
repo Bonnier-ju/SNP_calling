@@ -1,0 +1,49 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=50:00:00 #job time limit
+#SBATCH -J 06.2-LD_allele_freq #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Linkage desequilibrium & Minor alleles frequency #####
+#########################################
+
+echo "Linkage desequilibrium & Minor alleles frequency analysis"
+
+# Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/PLINK/2.00a4 
+module load bioinfo/PLINK/1.90b7 
+
+# Define the paths
+BED_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/snp_in_te_filtered.bed"
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.2-LD_allele_freq/"
+
+# Convert the BED file to PLINK 1 format
+plink --bed $BED_FILE --make-bed --out ${OUTPUT_DIR}snp_in_te_filtered
+
+# Convert the PLINK 1 format to PLINK 2 format
+plink2 --bfile ${OUTPUT_DIR}snp_in_te_filtered --make-pgen --out ${OUTPUT_DIR}snp_in_te_filtered
+
+# Check if the necessary files are present
+if [ ! -f "${OUTPUT_DIR}snp_in_te_filtered.pgen" ] || [ ! -f "${OUTPUT_DIR}snp_in_te_filtered.pvar" ] || [ ! -f "${OUTPUT_DIR}snp_in_te_filtered.psam" ]; then
+  echo "Error: Missing PLINK 2 fileset after conversion."
+  exit 1
+fi
+
+# Perform linkage disequilibrium analysis
+plink2 \
+    --bfile ${OUTPUT_DIR}snp_in_te_filtered \
+    --allow-extra-chr \
+    --r2 with-freqs \
+    --ld-window 33137 \
+    --indep-pairwise 1000 500 0.99 \
+    --out ${OUTPUT_DIR}LD
