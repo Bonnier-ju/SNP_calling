@@ -29,13 +29,14 @@ INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.
 ALLELE_FREQ="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/allele_frequencies"
 BINARY_FILES="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/binary"
 FINAL_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_filtered"
-
+EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/exclude_samples.txt"
 
 #Add ID to variant and converting into binary file (.bed, .bim, .fam)
 echo "Adding ID to variant and converting to binary ..." 
 plink2 --threads 8 --memory 20000 \
 	--vcf $INPUT_VCF \
 	--set-all-var-ids @_#_\$r_\$a \
+	--remove $EXCLUDE \
 	--make-bed \
 	--allow-extra-chr \
 	--out $BINARY_FILES
@@ -69,11 +70,12 @@ echo "Filtering missing data completed."
 #################################################################
 
 
-#echo "Performing missing data analysis and statistical analyses..."
+echo "Performing missing data analysis and statistical analyses..."
 
-#plink2 --threads 8 --memory 20000 \
-#  --bfile ${FINAL_OUTPUT} \
- # --allow-extra-chr --missing --het --pca --read-freq $ALLELE_FREQ.afreq --geno-counts \
-  #--out ${FINAL_OUTPUT}_stats
+plink2 --threads 8 --memory 20000 \
+  --bfile ${FINAL_OUTPUT} \
+  --allow-extra-chr --missing --het --pca --read-freq $ALLELE_FREQ.afreq --geno-counts \
+  --out ${FINAL_OUTPUT}_stats
 
-#echo "Missing data filtering and statistical analyses are completed."
+echo "Missing data filtering and statistical analyses are completed."
+
