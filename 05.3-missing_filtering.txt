@@ -4,7 +4,7 @@
 #SBATCH -J 05.3-missing_filtering #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=20G #memory reservation
+#SBATCH --mem=30G #memory reservation
 #SBATCH --cpus-per-task=8 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
@@ -23,12 +23,13 @@ module purge
 # Load the necessary modules
 module load bioinfo/PLINK/2.00a4 
 module load bioinfo/PLINK/1.90b7
+module load bioinfo/samtools/1.19
 
 # Input file path
 INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.2-normal_filtering/normal_filtered.vcf.gz"
 ALLELE_FREQ="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/allele_frequencies"
 BINARY_FILES="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/binary"
-FINAL_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_filtered"
+FINAL_OUTPUT="/home/jbonnier/work/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_0_SNP/0_missing_SNP"
 EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/exclude_samples.txt"
 
 #Add ID to variant and converting into binary file (.bed, .bim, .fam)
@@ -56,8 +57,9 @@ echo "Allele frequency file generated"
 echo "Filtering missing value ..."
 plink2 --threads 8 --memory 20000 \
 	--bfile $BINARY_FILES \
-	--allow-extra-chr --mind 0.1 --geno 0.05 --make-bed \
+	--allow-extra-chr --mind 0.1 --geno 0 --make-bed \
 	--set-all-var-ids @_#_\$r_\$a \
+	--export vcf \
 	--out ${FINAL_OUTPUT} 
 
 echo "Filtering missing data completed."
@@ -65,17 +67,27 @@ echo "Filtering missing data completed."
 #Filtering with --mind 0.1 => excluding individual with more than 10% of missing data
 #Filtering with --geno 0.1 => excluding SNP with more than 10% of missing genotype 
 
+# Compress the final VCF file with bgzip
+echo "Compressing the VCF file..."
+bgzip -c ${FINAL_OUTPUT}.vcf > ${FINAL_OUTPUT}.vcf.gz
+echo "VCF file compressed."
+
+# Index the compressed VCF file with tabix
+echo "Indexing the compressed VCF file..."
+tabix -p vcf ${FINAL_OUTPUT}.vcf.gz
+echo "Indexing completed."
+
 
 ##### Missing Data Analysis and Other Statistical Analyses #####
 #################################################################
 
 
-echo "Performing missing data analysis and statistical analyses..."
+#echo "Performing missing data analysis and statistical analyses..."
 
-plink2 --threads 8 --memory 20000 \
-  --bfile ${FINAL_OUTPUT} \
-  --allow-extra-chr --missing --het --pca --read-freq $ALLELE_FREQ.afreq --geno-counts \
-  --out ${FINAL_OUTPUT}_stats
+#plink2 --threads 8 --memory 20000 \
+ # --bfile ${FINAL_OUTPUT} \
+ #--allow-extra-chr --missing --het --pca --read-freq $ALLELE_FREQ.afreq --geno-counts \
+ #--out ${FINAL_OUTPUT}_stats
 
-echo "Missing data filtering and statistical analyses are completed."
+#echo "Missing data filtering and statistical analyses are completed."
 

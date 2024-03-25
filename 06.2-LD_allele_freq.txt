@@ -24,17 +24,29 @@ module load bioinfo/PLINK/1.90b7
 
 # Define the paths
 BINARY_TE_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/filtered_TE_output"
-OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.2-LD_allele_freq/LD_"
-
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.2-LD_allele_freq/wind_100000/LD_files"
 
 # Perform linkage disequilibrium analysis
 plink \
     --bfile ${BINARY_TE_FILE} \
-     --allow-extra-chr \
-	 --r2 with-freqs \
-	 --ld-window-kb 10000 \
-	 --indep-pairwise 1000 500 0.99 \
+    --allow-extra-chr \
+    --r2 --with-freqs \
+    --ld-window-kb 100000 \
+    --indep-pairwise 100000 50000 0.99 \
     --out ${OUTPUT_DIR}
+	
+echo "End of LD computing" 
+
+# Create binary file with pruned SNPs
+plink \
+    --bfile ${BINARY_TE_FILE} \
+    --allow-extra-chr \
+    --extract ${OUTPUT_DIR}.prune.in \
+    --make-bed \
+    --out ${OUTPUT_DIR}
+
+echo "End of creating binary files of pruned SNPs"
+
 
 #####--ld-window: This parameter defines the maximum number of variants to be considered when calculating the LD around a given SNP. 
 #A value that is too high can significantly increase calculation time and include SNP pairs that are unlikely to be in significant LD, 

@@ -1,0 +1,62 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=50:00:00 #job time limit
+#SBATCH -J 05.5-LD_filtering_for_sweep #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=50G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Filtering based on linkage desequilibrium #####
+####################################################
+#This script provide a filtering on SNP present on transposable elements based on high LD value 
+
+echo "Starting filtering by linkage desequilibrium"
+
+# Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/PLINK/1.90b7
+
+# Define the paths
+INPUT_TE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/filtered_TE_output"
+LD_ANALYSIS_FOR_SWEEP="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD_filtered_for_sweep/ld_analysis"
+FILTER_SNP_PY="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD_filtered_for_sweep/filter_snps.py"
+LD_FILTERED_SWEEP="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD_filtered_for_sweep/filterLD_snps"
+SNP_OF_INTEREST="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD_filtered_for_sweep/snps_of_interest.txt"
+
+echo "Starting linkage disequilibrium analysis"
+
+# Perform linkage disequilibrium analysis
+plink \
+    --bfile ${INPUT_TE} \
+    --allow-extra-chr \
+    --r2 --with-freqs \
+    --ld-window-kb 100000 \
+    --out ${LD_ANALYSIS_FOR_SWEEP}
+
+echo "End of linkage disequilibrium analysis"
+	
+	
+# Filtering SNPs based on result of LD results 
+#Need script Python 'filter_snps.py' to generate list of interest SNPs
+
+echo "Starting filtering SNPs based on result of LD results"
+python ${FILTER_SNP_PY} ${LD_ANALYSIS_FOR_SWEEP} > ${SNP_OF_INTEREST}
+echo "End of filtering"
+
+# Extract SNPs of interest and generate a VCF file
+
+echo "Extracting SNPs of interest"
+plink \
+	--bfile ${INPUT_TE} \
+	--extract ${SNP_OF_INTEREST} \
+	--recode vcf \
+	--out ${LD_FILTERED_SWEEP}
+
+
