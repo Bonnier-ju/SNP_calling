@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 07.1.3-ratio_nucleotide_diversity #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=30G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting nucleotide diversity ratio calculation"
+
+# Définir les fichiers d'entrée
+WEST_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-population_genomic/07.1-sweep_processing_01/07.1.1-nucleotide_diversity/nucleotide_diversity_west.windowed.pi"
+EAST_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-population_genomic/07.1-sweep_processing_01/07.1.1-nucleotide_diversity/nucleotide_diversity_east.windowed.pi"
+OUTPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-population_genomic/07.1-sweep_processing_01/07.1.3-ratio_nucleotide_diversity/nucleotide_diversity_ratio.txt"
+
+awk 'FNR==NR {east[$1,$2,$3]=$5; next} {pi_west=$5; if (pi_west == 0 || !($1,$2,$3 in east)) print $1"\t"$2"\t"$3"\t" "NA"; else print $1"\t"$2"\t"$3"\t" east[$1,$2,$3] / pi_west; }' $FILE_PI_EAST $FILE_PI_WEST > $OUTPUT_FILE
+

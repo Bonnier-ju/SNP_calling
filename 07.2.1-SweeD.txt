@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 07.1-filtration_by_LD #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=30G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting SweeD"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/SweeD/4.0.0
+
+
+SweeD -input <input_file.vcf> -name <output_file> -grid 100 -folded

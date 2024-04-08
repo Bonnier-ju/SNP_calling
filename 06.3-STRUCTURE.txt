@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=80:00:00 #job time limit
+#SBATCH -J 06.3-STRUCTURE #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=50G #memory reservation
+#SBATCH --cpus-per-task=12 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Converting VCF file to STRUCTURE #####
+############################################
+
+echo "Starting STRUCTURE"
+
+# Cleaning work place 
+module purge
+
+#Module load
+module load bioinfo/Structure/v2.3.4_console
+
+#Files paths
+STRUCTURE_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.3-STRUCTURE/"
+STRUCTURE_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.3-STRUCTURE/str_"
+MAIN_PARA="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.3-STRUCTURE/main_param.file"
+EXTRA_PARA="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.3-STRUCTURE/extra_para.file"
+
+
+# Running structure with K from 1 to 12
+for K in {1..12}
+do
+   structure -i ${STRUCTURE_INPUT} -m ${MAIN_PARA} -e ${EXTRA_PARA} -K ${K} -o ${STRUCTURE_OUTPUT}${K} 
+done

@@ -1,0 +1,45 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=04:00:00 #job time limit
+#SBATCH -J 05.6-subsampling #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=8 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Variants normal-filtering #####
+######################################
+
+echo "Starting the SNP subsampling script."
+
+
+#Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load devel/Miniconda/Miniconda3
+module load bioinfo/vcflib/1.0.3
+module load bioinfo/samtools/1.19
+module load bioinfo/Bcftools/1.9
+
+
+# Paths
+VCF_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.0-data_preparation/06.0.1-LD_pruning/pruned_snp.vcf.gz"
+VCF_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.0-data_preparation/06.0.2-sub_sampling/sub_pruned_500000SNP.vcf.gz"
+
+echo "Starting sub-sampling"
+
+# Sub-sampling 7.7% of filtered variants
+bcftools view $VCF_INPUT | vcfrandomsample -r 0.0502 | bgzip -c > $VCF_OUTPUT
+
+echo "End of sub-sampling"
+
+# Counting the SNPs
+bcftools index $VCF_OUTPUT
+bcftools view -v snps $VCF_OUTPUT | grep -v "^#" | wc -l > $VCF_OUTPUT.snp_count
+
+echo "The number of SNPs has been written to $VCF_OUTPUT.snp_count"

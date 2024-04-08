@@ -1,0 +1,70 @@
+#!/bin/bash
+#SBATCH -p unlimitq 
+#SBATCH --time=250:00:00 #job time limit
+#SBATCH -J 06.1-Admixture #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=60G #memory reservation
+#SBATCH --cpus-per-task=12 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Population structure analysis with ADMIXTURE #####
+########################################################
+
+echo "Starting Population structure analysis"
+
+# Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/PLINK/1.90b7
+module load bioinfo/ADMIXTURE/1.3.0
+
+# Define paths
+VCF_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.0-data_preparation/06.0.2-sub_sampling/sub_pruned_500000SNP.vcf.gz"
+BINARY_FILES="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.0-data_preparation/06.0.2-sub_sampling/sub_pruned_500000SNP"
+ADMIXTURE_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.1-admixture/"
+
+# Step 0: Decompressing the VCF file
+echo "Decompressing the VCF file..."
+gunzip -c $VCF_INPUT > ${VCF_INPUT%.gz}
+
+# Updating VCF_INPUT to point to the decompressed file
+VCF_INPUT=${VCF_INPUT%.gz}
+
+# Step 1: Converting VCF to binary files
+plink --vcf $VCF_INPUT \
+	--make-bed \
+	--allow-extra-chr \
+	--double-id \
+	--out $BINARY_FILES
+
+
+#Step 2:  Renaming chromosomes in .bim file to make it compatible with ADMIXTURE
+echo "Renaming chromosomes in .bim file..."
+awk '{$1="0"; print}' ${BINARY_FILES}.bim > ${BINARY_FILES}_temp.bim
+mv ${BINARY_FILES}_temp.bim ${BINARY_FILES}.bim
+
+cd /work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.1-admixture/
+
+# Step 3: Running admixture 
+echo "Running ADMIXTURE..."
+
+for K in {1..10}; do
+    admixture --cv=10 $BINARY_FILES.bed $K | tee ${ADMIXTURE_OUTPUT}/log${K}.out
+    echo "ADMIXTURE analysis for K=${K} is completed."
+done
+
+echo "End of ADMIXTURE processing, let's see the results"
+
+#ADMIXTURE includes a cross-validation procedure that allows the user to identify the value of K for
+#which the model has best predictive accuracy, as determined by “holding out” data points.
+
+
+# Step 4 : Collect the cross validation information obtained from the all the log files
+cd /work/user/jbonnier/Dicorynia/full_workflow/06-population_genetic/06.1-admixture/
+
+grep -h CV log*.out>cross_validation.txt

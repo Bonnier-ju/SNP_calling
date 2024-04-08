@@ -1,0 +1,45 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 07.0-spliting_East_West_pops #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/PLINK/1.90b7
+
+# Print the start of the process
+echo "Starting the VCF file split..."
+
+# Define the path 
+B_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/0_missing_SNP/filtered_TE_output"
+OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/07-population_genomic/07.0-spliting_East_West_pops/"
+INDIVIDUS_FICHIER1="/work/user/jbonnier/Dicorynia/full_workflow/07-population_genomic/07.0-spliting_East_West_pops/individuals_East.txt"
+INDIVIDUS_FICHIER2="/work/user/jbonnier/Dicorynia/full_workflow/07-population_genomic/07.0-spliting_East_West_pops/individuals_West.txt"
+
+# Create the first VCF file with a subset of individuals
+plink --bfile $B_FILE --keep $INDIVIDUS_FICHIER1 --recode vcf --make-bed --allow-extra-chr --out ${OUTPUT}East_group
+
+# Create the second VCF file with the other subset of individuals
+plink --bfile $B_FILE --keep $INDIVIDUS_FICHIER2 --recode vcf --make-bed --allow-extra-chr --out ${OUTPUT}West_group
+
+# Count the number of SNPs in the East group VCF
+echo "Counting the number of SNPs in the East group VCF..."
+EAST_SNPS_COUNT=$(grep -vc "^#" ${OUTPUT}East_group.vcf)
+echo "Number of SNPs in the East group: $EAST_SNPS_COUNT"
+
+# Count the number of SNPs in the West group VCF
+echo "Counting the number of SNPs in the West group VCF..."
+WEST_SNPS_COUNT=$(grep -vc "^#" ${OUTPUT}West_group.vcf)
+echo "Number of SNPs in the West group: $WEST_SNPS_COUNT"
+
+
+# End of script message
+echo "VCF file split completed."
