@@ -4,7 +4,7 @@
 #SBATCH -J 05.4-transposable_element_filtering #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=30G #memory reservation
+#SBATCH --mem=40G #memory reservation
 #SBATCH --cpus-per-task=10 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
@@ -20,39 +20,39 @@ module load devel/python/Python-3.11.1
 module load bioinfo/bedtools/2.30.0
 
 # Define file paths
-OUTPUT_PREFIX="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/0_missing_SNP/"
+OUTPUT_PREFIX="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/"
 SNP_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_0_SNP/bedtool_file_SNP.bed"
 GENOME_GFF_FILE="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa.out.gff.gz"
-GENOME_TE_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/0_missing_SNP/transposable_elements.bed"
+GENOME_TE_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/transposable_elements.bed"
 BINARY_FILES_PREFIX="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_0_SNP/0_missing_SNP"
 
-cd /work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_0_SNP/
-awk '{print $1"\t"$4-1"\t"$4"\t"$2}' 0_missing_SNP.bim > bedtool_file_SNP.bed
+#cd /work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.3-missing_filtering/missing_0_SNP/
+#awk '{print $1"\t"$4-1"\t"$4"\t"$2}' 0_missing_SNP.bim > bedtool_file_SNP.bed
 
 echo "Converting GFF to BED..."
 zcat $GENOME_GFF_FILE | gff2bed > $GENOME_TE_FILE
 echo "Conversion from GFF to BED completed."
 
 echo "Filtering SNPs based on transposable elements..."
-bedtools intersect -a $SNP_FILE -b $GENOME_TE_FILE -wa > ${OUTPUT_PREFIX}filtered_snps.bed
+bedtools intersect -a $SNP_FILE -b $GENOME_TE_FILE -v > ${OUTPUT_PREFIX}non_te_snps.bed
 
 
-# Count the number of SNPs in transposable elements
-echo "Counting SNPs in transposable elements..."
-SNP_COUNT=$(wc -l < ${OUTPUT_PREFIX}filtered_snps.bed)
-echo "There are ${SNP_COUNT} SNPs in transposable elements."
+# Count the number of SNPs outside transposable elements
+echo "Counting SNPs outside transposable elements..."
+NON_TE_SNP_COUNT=$(wc -l < ${OUTPUT_PREFIX}non_te_snps.bed)
+echo "There are ${NON_TE_SNP_COUNT} SNPs outside transposable elements."
 
 
-echo "Generating PLINK-readable list from filtered SNPs..."
-awk '{print $4}' ${OUTPUT_PREFIX}filtered_snps.bed > ${OUTPUT_PREFIX}filtered_snps_list.txt
+echo "Generating PLINK-readable list from non-transposable element SNPs..."
+awk '{print $4}' ${OUTPUT_PREFIX}non_te_snps.bed > ${OUTPUT_PREFIX}non_te_snps_list.txt
 
 echo "Creating binary files with PLINK..."
 plink2 --bfile $BINARY_FILES_PREFIX \
-	--extract ${OUTPUT_PREFIX}filtered_snps_list.txt \
+	--extract ${OUTPUT_PREFIX}non_te_snps_list.txt \
 	--make-bed \
 	--allow-extra-chr \
 	--set-all-var-ids @_#_\$r_\$a \
 	--export vcf \
-	--out ${OUTPUT_PREFIX}filtered_TE_output
+	--out ${OUTPUT_PREFIX}TE_filtered_snp
 
 echo "Transposable element filtering completed."
