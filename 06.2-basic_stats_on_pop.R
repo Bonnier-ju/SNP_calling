@@ -2,24 +2,24 @@
 ################### Basics statistics on population ############################
 ################################################################################
 
-
 library(vcfR)
 library(hierfstat)
+library(adegenet)
 
-# Chemins des fichiers 
-vcf_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/sub_200k_SNP.vcf"
-pop_file_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/Pop_file_East_Inland_West_StG.csv"
 
-# Lire les fichiers 
+# Files path 
+vcf_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/sub_200k_SNP_stgeorge.vcf"
+#pop_file_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/Pop_file_East_Inland_West_StG.csv"
+
+# Read data files 
 vcf_data <- read.vcfR(vcf_path)
-pop_file <- read.csv(pop_file_path, header = T)
+#pop_file <- read.csv(pop_file_path, header = T)
 
-# Convertir les données VCF en format génétique (genind) pour hierfstat
+# Converting VCF to genind 
 genind_obj <- vcfR2genind(vcf_data)
 genind_obj
 
-
-# Créer un vecteur avec les noms des populations
+# Creating vecteur for pop name
 groups <- c("Inland", "Inland", "East", "East", "Inland", "East", "East", "East", "Inland", "East", 
                  "East", "St_georges", "East", "East", "East", "East", "East", "Inland", "St_georges", "Inland", 
                  "East", "East", "West", "East", "East", "West", "West", "Inland", "East", "West", "St_georges", 
@@ -30,15 +30,16 @@ groups <- c("Inland", "Inland", "East", "East", "Inland", "East", "East", "East"
                  "West", "St_georges", "St_georges", "Inland", "West", "Inland", "Inland", "East", "Inland", "Inland", 
                  "Inland", "St_georges")
 
-# Vérifiez que la longueur du vecteur des populations correspond au nombre d'individus dans genind_obj
+groups <- c("St_georges", "St_georges", "St_georges", "St_georges", "St_georges", "St_georges", "St_georges", "St_georges")
+
+# Check if same number of individuals and pop name
 if (length(groups) != nInd(genind_obj)) {
   stop("Le nombre de populations ne correspond pas au nombre d'individus dans l'objet genind.")
 }
 
-# Assigner les populations à l'objet genind
+# Add pop to genind
 pop(genind_obj) <- factor(groups)
 
-# Vérifier l'assignation
 table(pop(genind_obj))
 
 #### Basic stats by hierfstats ####
@@ -48,9 +49,8 @@ table(pop(genind_obj))
 
 stats <- basic.stats(genind_obj)
 
-# Création d'un dataframe à partir de la liste de statistiques
+# Saving results in differents data-frame
 stats_df <- do.call(rbind, stats)
-
 str(stats)
 
 # Convert the numeric matrices to data frames
@@ -59,7 +59,6 @@ Ho_df <- as.data.frame(stats$Ho)
 Hs_df <- as.data.frame(stats$Hs)
 Fis_df <- as.data.frame(stats$Fis)
 
-# The 'perloc' component is already a data frame
 perloc_df <- stats$perloc
 
 # Convert the 'overall' named vector to a data frame
@@ -90,8 +89,11 @@ summary(overall_df)
 summary(pop_freq_df)
 
 
+###################### Test of Hardy--Weinberg Equilibrium #####################
+################################################################################
+#This function tests, for a series of loci, the hypothesis that genotype frequencies follow the Hardy--Weinberg equilibrium.
 
-
+hw.test(genind_obj, B = 1000)
 
 
 
@@ -100,6 +102,7 @@ summary(pop_freq_df)
 
 
 ##################### Allelic richness by hierfstats ###########################
+################################################################################
 #Estimates allelic richness, the rarefied allelic counts, per locus and population
 
 A_richness <- allelic.richness(genind_obj)
@@ -114,14 +117,15 @@ summary(Ar_df)
 
 
 
-
 ############################# DAPC ############################################
 ###############################################################################
 
-library("adegenet")
+library(adegenet)
 library(ade4)
-install.packages("viridis")
-library("viridis")
+
+#color package 
+library(RColorBrewer)
+library(viridis)
 
 
 vcf_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/sub_200k_SNP.vcf"
@@ -130,7 +134,7 @@ vcf_data <- read.vcfR(vcf_path)
 
 genind_obj <- vcfR2genind(vcf_data)
 
-# Créer un vecteur avec les noms des populations
+# Creating a vector for pop name
 groups <- c("Cacao","Cacao","MC_87","MC_88","Cacao","MC_88","MC_88","MC_87","Regina","MC_88","Foret_Regina_St_Georges","St_georges",
             "Saut_Lavilette","Saut_Lavilette","Saut_Lavilette","MC_87","Saut_Lavilette","Nouragues_Inselberg","St_georges","Regina",
             "Foret_Regina_St_Georges","Foret_Regina_St_Georges","Apatou","Foret_Regina_St_Georges","Saut_Lavilette","Apatou","Apatou",
@@ -142,36 +146,29 @@ groups <- c("Cacao","Cacao","MC_87","MC_88","Cacao","MC_88","MC_88","MC_87","Reg
             "Nouragues_Inselberg","Nouragues_Inselberg","Acarouany","Saut_Lavilette","Saut_Lavilette","Apatou","St_georges","St_georges",
             "Regina","Apatou","Nouragues_Inselberg","Regina","Foret_Regina_St_Georges","Piste_St_Elie","Nouragues_Inselberg","Regina","St_georges")
 
-# Vérifiez que la longueur du vecteur des populations correspond au nombre d'individus dans genind_obj
+# Check that the length of the population vector corresponds to the number of individuals in genind_obj
 if (length(groups) != nInd(genind_obj)) {
   stop("Le nombre de populations ne correspond pas au nombre d'individus dans l'objet genind.")
 }
 
-# Assigner les populations à l'objet genind
+# Assign pop to genind
 pop(genind_obj) <- factor(groups)
 
-# Vérifier l'assignation
 table(pop(genind_obj))
 
-genepop <- genind2genpop(genind_obj)
-
-
-# Trouver le nombre optimal de clusters sans a priori sur les populations
+# Find the optimal number of clusters without population a priori
 # Find the break int he curve for number of retained PCA 
 # Use the lowest value of number of cluster for BIC values 
 grp <- find.clusters(genind_obj, max.n.clust = 30)
 
-# Effectuer une Analyse en Composantes Principales (ACP) pour réduire la dimensionnalité des données
-# et éviter la surdétermination statistique
+# Perform Principal Component Analysis (PCA) to reduce data dimensionality
+# and avoid statistical overdetermination
 dapc_obj <- dapc(genind_obj, var.contrib = TRUE, n.pca = 50, n.da = length(unique(groups)) - 1)
 
-# Associer les individus aux populations
+# Link inds with pop
 dapc_obj$grp <- factor(groups)
 
-install.packages("RColorBrewer")
-library(RColorBrewer)
-
-# Créer un vecteur de couleurs où les noms correspondent aux groupes
+# Create a color vector where names correspond to groups
 specific_colors <- c("Acarouany" = "#D02090", "Apatou" = "red", "Cacao" = "green", 
                      "Foret_Regina_St_Georges" = "#00FFFF", "MC_87" = "chartreuse", "MC_88" = "#008B8B",
                      "Nouragues_Inselberg" = "deepskyblue", "Piste_St_Elie" = "chartreuse4", 
@@ -179,14 +176,11 @@ specific_colors <- c("Acarouany" = "#D02090", "Apatou" = "red", "Cacao" = "green
 
 myCol <- c("darkblue","purple","green","orange","red","blue")
 
-
-# Afficher le nuage de points de l'analyse DAPC
+# DAPC
 scatter(dapc_obj, bg="white", pch=20, cell=4, cstar=2, col = specific_colors[dapc_obj$grp], solid=1,cex=1,clab=0.5, leg=TRUE, scree.pca=TRUE, scree.da=TRUE,
         posi.pca="bottomleft", posi.da="bottomright", ratio.pca=0.16, ratio.da=0.16, cleg = .6)
 
-
-# Supposons que dapc_obj est votre objet DAPC déjà calculé
-# Calcul des pourcentages de variance expliquée par les axes principaux
+# Calculation of the percentage of variance explained by the main axes
 eigenvalues <- dapc_obj$eig
 percent_variance <- eigenvalues / sum(eigenvalues) * 100
 
