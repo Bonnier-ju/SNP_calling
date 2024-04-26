@@ -18,24 +18,24 @@ library(ggrepel)
 library(tidyverse)
 
 # Define the base path for input files
-setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.2-global_population_stats/06.2.1-PCA")
+setwd("C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.2-global_population_stats/06.2.1-PCA/full_SNP_inland_only/")
 
-base_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.2-global_population_stats/06.2.1-PCA"
+base_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.2-global_population_stats/06.2.1-PCA/full_SNP_inland_only/"
 
 # Define the path for the population information CSV file
 population_info_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/Pop_file.csv"
 
 
 # Read PCA results and population information
-pca_data <- read_delim(file.path(base_path, "sub_pruned_snp.eigenvec"), col_names = FALSE, 
+pca_data <- read_delim(file.path(base_path, "full_SNP_inland_only.eigenvec"), col_names = FALSE, 
                        delim = " ") # Read PCA results with a tab delimiter
 population_info <- read_csv(population_info_path) # Read population info, assuming CSV format
 
 # Prepare PCA data for merging by renaming IID to SampleID
 # and creating a new column with the first 7 letters of each SampleID
 pca_data <- pca_data %>%
-  rename(SampleID = X2) %>%
-  mutate(SampleID_short = substr(SampleID, 7, 9)) # Extract characters 7 to 9 from SampleID
+  rename(ID = X2) %>%
+  mutate(SampleID_short = substr(ID, 7, 9)) # Extract characters 7 to 9 from SampleID
 
 
 # Merge PCA data with population information based on SampleID
@@ -48,17 +48,16 @@ pca_data <- pca_data %>%
 
 pop_order <- c("Apatou", "Acarouany", "Piste_St_Elie", "Nouragues_Inselberg", "Cacao", "Regina", "Saut_Lavilette", "Foret_Regina_St_Georges", "MC_87", "MC_88", "St_georges")
 
-pca_data$Pop <- factor(pca_data$Site, levels = pop_order)
+pca_data$Pop <- factor(pca_data$Sites, levels = pop_order)
 
 
 my_colors <- c("Apatou" = "#8B2500", "Acarouany" = "#CD3700",  "Piste_St_Elie" = "#CDCD00",
-               "Nouragues_Inselberg" = "green4", "MC_88" = "#A020F0","Cacao" = "#838B8B",
-               "MC_87" = "#DDA0DD", "Foret_Regina_St_Georges" = "deepskyblue3","Regina" = "#0000FF",
+               "Nouragues_Inselberg" = "green4", "MC_88" = "#A020F0","Cacao" = "#838B8B", "MC_87" = "#CD6090", "Foret_Regina_St_Georges" = "deepskyblue3","Regina" = "#0000FF",
                "Saut_Lavilette" = "#96CDCD",  "St_georges" = "#551A8B")
 
 
 #Variance %
-eigenvalues <- read.table("sub_pruned_snp.eigenval", header = FALSE)
+eigenvalues <- read.table("full_SNP_inland_only.eigenval", header = FALSE)
 eigenvalues <- eigenvalues$V1
 
 total_variance <- sum(eigenvalues)
@@ -70,19 +69,21 @@ pc3_percent <- percent_variance[3]
 
 
 # Visualisation PCA avec ggplot2, en utilisant la palette de couleurs personnalisée
-ggplot(pca_data, aes(x = PC2, y = PC3, label = SampleID_short, color = Pop)) +
+
+ggplot(pca_data, aes(x = PC2, y = PC3, label = ID2, color = Pop)) +
   geom_point() + 
   geom_text_repel(size = 3) +
-  #stat_ellipse(type = "t", level = 0.95) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_minimal() +
-  labs(title = "PCA Plot", 
+  labs(title = "", 
        x = paste("PC2 (", round(pc2_percent, 2), "%)", sep=""), 
-       y = paste("PC3 (", round(pc3_percent, 2), "%)", sep=""),
-       color = "Population") + 
-  scale_color_manual(values = my_colors) + # Utiliser les couleurs définies manuellement
-  theme(legend.position = "right", legend.title = element_text(face = "bold"))
+       y = paste("PC3 (", round(pc3_percent, 2), "%)", sep="")) + 
+  scale_color_manual(values = my_colors, name = "Sampling sites") +
+  theme(legend.position = c(.2, .7), 
+        legend.title = element_text(face = "bold", size = 13),
+        legend.text = element_text(size = 12))  # Modifier la taille de la police des éléments de la légende
+
 
 
 
@@ -141,18 +142,19 @@ library(dplyr)
 library(tidyr)
 
 # Chemins vers les résultats d'admixture, les informations sur la population, et le fichier des sites
-admixture_results_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.1-admixture/sub_pruned_500000SNP"
-pop_files_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/Pop_file.csv"
+admixture_results_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.1-admixture/full_SNP_MC87_out/"
+pop_files_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/Pop_file.csv"
 
 # Lecture du fichier des sites d'échantillonnage
 sites_data <- read.csv(pop_files_path, header = TRUE, stringsAsFactors = FALSE)
 colnames(sites_data) <- c("SamplingSite", "IndividualID")
 
 # Choisir une valeur spécifique de K pour la visualisation
-K <- 3
+K <- 5
 
 # Lecture des résultats d'admixture avec les noms des individus
-admixture_file <- sprintf("%s.%d.named.Q", admixture_results_path, K)
+admixture_file <- sprintf("%sLD_pruned_snp_MC87_out.%d.named.Q", admixture_results_path, K)
+
 admixture_data <- read.table(admixture_file, col.names = c("IndividualID", paste0("Ancestry", 1:K)))
 
 # Modification des identifiants des individus pour ne garder que les caractères 7, 8 et 9
@@ -161,10 +163,18 @@ admixture_data$IndividualID <- substr(admixture_data$IndividualID, 7, 9)
 # Fusion des données d'admixture avec les sites d'échantillonnage
 admixture_data <- merge(admixture_data, sites_data, by = "IndividualID")
 
+#Renommer la cinquième colonne avec les identifiants liés aux sites 
+print(colnames(admixture_data))
+colnames(admixture_data)[K+3] <- "ID"  
+
 # Transformation des données pour la visualisation
 admixture_long <- admixture_data %>%
-  gather(key = "Ancestry", value = "Proportion", -IndividualID, -SamplingSite) %>%
+  gather(key = "Cluster", value = "Proportion", -IndividualID, -SamplingSite, -ID) %>%
   mutate(Ancestry = factor(Ancestry, levels = paste0("Ancestry", 1:K)))
+
+#Exclure les valeurs contenant des NA cad les inds noms compris dans le groupe en cours d'analyse 
+admixture_long <- admixture_long %>%
+  filter(!is.na(Ancestry))
 
 # Filtre pour exclure les données où SamplingSite est "AFD"
 admixture_long <- admixture_long %>% 
@@ -177,10 +187,11 @@ pop_order <- c("Apatou", "Acarouany",
 # Réordonner les niveaux du facteur SamplingSite selon pop_order et ordonner les données
 admixture_long$SamplingSite <- factor(admixture_long$SamplingSite, levels = pop_order)
 admixture_long <- admixture_long %>% arrange(SamplingSite, IndividualID)
+admixture_long$Proportion <- as.numeric(admixture_long$Proportion)
 
 # Création du graphique en utilisant ggplot
-ggplot(admixture_long, aes(x = reorder(IndividualID, as.numeric(SamplingSite)), y = Proportion, fill = Ancestry)) +
-  geom_bar(stat = "identity", width = 1) +
+ggplot(admixture_long, aes(x = reorder(ID, as.numeric(SamplingSite)), y = Proportion, fill = Ancestry)) +
+  geom_bar(stat = "identity", position = "stack", color = "black") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 70, hjust = 1),  # Rotation des étiquettes pour une meilleure lisibilité
         axis.title.x = element_blank(),  # Retirer le titre de l'axe des x
@@ -188,7 +199,8 @@ ggplot(admixture_long, aes(x = reorder(IndividualID, as.numeric(SamplingSite)), 
         panel.grid.major.x = element_blank(),  # Retirer les grilles majeures en x
         panel.grid.minor.x = element_blank(),  # Retirer les grilles mineures en x
         legend.position = "bottom") +  # Position de la légende
-  labs(y = "Proportion d'ancestralité", fill = "Ancestralité")  # Étiquettes de l'axe des y et de la légende
+  labs(y = "Membership probability", fill = "Clustering")  # Étiquettes de l'axe des y et de la légende
+
 
 
 
