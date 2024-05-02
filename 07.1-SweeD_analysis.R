@@ -4,8 +4,10 @@
 
 library(dplyr)
 library(data.table)
+library(ggplot2)
+library(tidyverse)
 
-file_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/07-outlier_analysis/07.2-SweeD/sub_200k_SNP/SweeD_Report.sub_200k_SNP_west.txt"
+file_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/07-outlier_analysis/07.2-SweeD/full_SNP/SweeD_Report.full_SNP_west.txt"
 
 # Read the file using readLines to easily manipulate lines
 lines <- readLines(file_path)
@@ -59,14 +61,19 @@ filtered_data <- bind_rows(data_list)
 # Filter to keep only lines where Likelihood is different from 0
 filtered_data_west <- filtered_data %>% filter(Likelihood != 0)
 
+filtered_data_other <- filtered_data %>% filter(Likelihood != 0)
 
+# Calculate the 70th percentile of the Likelihood column in the filtered_data dataframe
+# This value is used as a threshold to determine the top 30% highest values in the Likelihood column
+seuil <- quantile(filtered_data$Likelihood, 0.95)
+
+# Filter the data to keep only rows where the Likelihood value is greater than the calculated threshold
+# This results in a new dataframe containing only the top 30% of entries based on Likelihood
+filtered_data_top5percent <- filtered_data %>% filter(Likelihood > seuil)
 
 
 ############################# Graphical analysis ####################################
 ####################################################################################
-
-library(ggplot2)
-library(dplyr)
 
 
 ############################### Graph by scaffold ###################################
@@ -93,18 +100,19 @@ str(filtered_data$scaffold)
 # Calculate an offset for each scaffold
 max_position <- max(filtered_data$Position)
 # Create a new column that will contain the adjusted positions
-filtered_data$AdjustedPosition <- filtered_data$Position + as.numeric(as.factor(filtered_data$scaffold)) * (max_position + 10000)  # Ajoute un décalage basé sur le numéro du scaffold
+filtered_data$AdjustedPosition <- filtered_data$Position + as.numeric(as.factor(filtered_data$scaffold)) * (max_position + 1)
 
 # Graph
 ggplot(filtered_data, aes(x = AdjustedPosition, y = Likelihood, color = as.factor(scaffold))) +
   geom_point(alpha=0.6) +  
   theme_minimal() +
   labs(x = "Adjusted Position (each scaffold offset)",
-       y = "Likelihood",
+       y = "Composite Likelihood Ratio (CLR)",
        color = "Scaffold") +
   theme(plot.title = element_text(hjust = 0.5),
         legend.title = element_text(size = 10),
-        legend.text = element_text(size = 8))
+        legend.text = element_text(size = 8)) + 
+  ylim(0, 25)
 
 
 ####################### Comparing outlier value  ###################################
@@ -128,6 +136,10 @@ common_sweeps <- common_sweeps %>%
   mutate(Likelihood_Ratio = Likelihood.West / Likelihood.Other)
 print(common_sweeps)
 
+# Computing other/west ratio
+common_sweeps <- common_sweeps %>%
+  mutate(Likelihood_Ratio = Likelihood.Other / Likelihood.West)
+print(common_sweeps)
 
 
 

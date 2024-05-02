@@ -98,9 +98,6 @@ hw.test(genind_obj, B = 1000)
 
 
 
-
-
-
 ##################### Allelic richness by hierfstats ###########################
 ################################################################################
 #Estimates allelic richness, the rarefied allelic counts, per locus and population
@@ -187,5 +184,36 @@ percent_variance <- eigenvalues / sum(eigenvalues) * 100
 
 
 
+######################################### FST computing #########################################################
+#################################################################################################################
+# Install the necessary Bioconductor packages
+install.packages("devtools")
+install.packages("BiocManager")
+BiocManager::install("SNPRelate")
+
+install.packages("dartRverse")
+install.packages("dartR")
+
+library(dartRverse)
+library(dartR)
+library(vcfR)
+library(adegenet)
 
 
+vcf_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/ld_04_pruned.vcf"
+csv_file <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/Pop_files/Pop_file_11sites.csv"
+
+
+data <- read.vcfR(vcf_path)
+
+data <- vcfR2genind(data)
+
+pop_info <- read.csv(csv_file, header = T)
+
+populations <- pop_info[, "population"]
+
+genind_data@pop <- factor(populations)
+
+print(genind_data)
+
+data <- gi2gl(data, parallel = FALSE, verbose = NULL)
