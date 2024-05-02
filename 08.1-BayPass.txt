@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=50:00:00 #job time limit
+#SBATCH -J 09.1-BayPass #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=30G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+########### BayPass analysis  ###########
+#########################################
+module purge
+
+#module load
+module load statistics/R/4.2.2
+module load bioinfo/BayPass/2.4
+
+#files paths
+GENOTYPE_FILE="/your/path/to/genotype_file.txt"
+ENV_FILE="/your/path/to/env_file.txt"
+OUTPUT_PREFIX="/your/output/directory/output_baypass"
+
+#Running BayPass
+baypass -gfile ${GENOTYPE_FILE} -efile ${ENV_FILE} -outprefix ${OUTPUT_PREFIX}

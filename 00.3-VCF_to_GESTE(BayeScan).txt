@@ -1,0 +1,33 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=80:00:00 #job time limit
+#SBATCH -J 00.1-VCF_to_GESTE(BayeScan) #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=102G #memory reservation
+#SBATCH --cpus-per-task=15 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Converting VCF file to STRUCTURE #####
+############################################
+
+echo "Starting conversion"
+
+# Cleaning work place 
+module purge
+
+#Module load
+module load bioinfo/PGDSpider/2.1.1.5
+
+#Files paths
+VCF_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/LD_pruned_snp_MC87_out.vcf"
+GESTE_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/08-outlier_analysis/08.1-bayescan/SNP_GESTE.txt"
+SPID_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/VCF_to_GESTE(Bayescan).spid"
+
+#Converting
+java -Xmx100024m -Xms5012m -jar $PGD_HOME/PGDSpider2-cli.jar -inputfile $VCF_INPUT -inputformat VCF -outputfile $GESTE_OUTPUT -outputformat GESTE_BAYE_SCAN -spid $SPID_FILE
+
+echo "End of file converting"

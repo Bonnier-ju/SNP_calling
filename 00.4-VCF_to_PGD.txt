@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH -p unlimitq 
+#SBATCH --time=150:00:00 #job time limit
+#SBATCH -J 00.1-VCF_to_PGD #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=100G #memory reservation
+#SBATCH --cpus-per-task=20 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Converting VCF file to STRUCTURE #####
+############################################
+
+echo "Starting conversion"
+
+# Cleaning work place 
+module purge
+
+#Module load
+module load bioinfo/PGDSpider/2.1.1.5
+
+#Files paths
+VCF_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_full_SNP/SNP_full_87inds.vcf"
+PGD_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/full_SNP.pgd"
+GESTE_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.1-bayescan/full_SNP_GESTE.bs"
+SPID_FILE1="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/VCF_to_PGD.spid"
+SPID_FILE2="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/PGD_to_BayeScan.spid"
+
+#Converting
+
+cd /work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/
+
+java -Xmx100024m -Xms50012m -jar $PGD_HOME/PGDSpider2-cli.jar -inputfile $VCF_INPUT -inputformat VCF -outputfile $PGD_FILE -outputformat PGD -spid $SPID_FILE1
+
+java -Xmx100024m -Xms50012m -jar $PGD_HOME/PGDSpider2-cli.jar -inputfile $PGD_FILE -inputformat PGD -outputfile $GESTE_OUTPUT -outputformat GESTE_BAYE_SCAN -spid $SPID_FILE2
+
+echo "End of file converting"
+
+

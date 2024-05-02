@@ -1,0 +1,181 @@
+INFO  23-04 14:05:14,551 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 14:05:14,694 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 14:05:14,778 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 23-04 14:05:14,783 (FileQuestionImpl.java:getInputStream:73)  -File: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_PGD_Spider.txt" not found!
+DEBUG 23-04 14:05:14,785 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_PGD_Spider.txt" (No such file or directory)
+java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_PGD_Spider.txt" (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+INFO  23-04 14:07:34,679 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 14:07:34,689 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 14:07:34,698 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 14:20:48,673 (GesteBayeScanWriter.java:write:381)  -GC overhead limit exceeded
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+	at java.lang.String.substring(String.java:1969)
+	at java.lang.String.split(String.java:2353)
+	at java.lang.String.split(String.java:2422)
+	at ch.unibe.iee.cmpg.pgdspider.model.writer.GesteBayeScanWriter.write(GesteBayeScanWriter.java:276)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:258)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+ERROR 23-04 14:20:48,676 (GesteBayeScanWriter.java:write:382)  -not enough memory. To increase the allowed memory see help.
+INFO  23-04 14:24:08,322 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 14:24:08,338 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 14:24:08,354 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 14:44:31,811 (GesteBayeScanWriter.java:write:381)  -GC overhead limit exceeded
+java.lang.OutOfMemoryError: GC overhead limit exceeded
+	at java.lang.String.substring(String.java:1969)
+	at java.lang.String.split(String.java:2353)
+	at java.lang.String.split(String.java:2422)
+	at ch.unibe.iee.cmpg.pgdspider.model.writer.GesteBayeScanWriter.write(GesteBayeScanWriter.java:276)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:258)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+ERROR 23-04 14:44:31,815 (GesteBayeScanWriter.java:write:382)  -not enough memory. To increase the allowed memory see help.
+INFO  23-04 14:49:55,081 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 14:49:55,097 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 14:49:55,110 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+INFO  23-04 18:01:28,117 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 18:01:28,130 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 18:01:28,167 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 18:01:37,832 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 23-04 18:01:38,489 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  23-04 18:01:38,734 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 18:01:38,748 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 23-04 18:01:38,767 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 23-04 18:01:38,768 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  23-04 19:20:33,842 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 19:20:33,887 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 19:20:33,912 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 23-04 19:20:44,223 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 23-04 19:20:45,049 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  23-04 19:20:45,316 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 23-04 19:20:45,326 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 23-04 19:20:45,339 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 23-04 19:20:45,340 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 17:47:31,692 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 17:47:31,757 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 17:47:31,813 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 29-04 17:47:31,817 (FileQuestionImpl.java:getInputStream:73)  -File: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" not found!
+DEBUG 29-04 17:47:31,820 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" (No such file or directory)
+java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+DEBUG 29-04 17:47:41,029 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 17:47:41,719 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 17:47:41,985 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 17:47:41,995 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 17:47:42,014 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 17:47:42,014 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 17:49:55,534 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 17:49:55,544 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 17:49:55,552 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 29-04 17:49:55,593 (FileQuestionImpl.java:getInputStream:73)  -File: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" not found!
+DEBUG 29-04 17:49:55,594 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" (No such file or directory)
+java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+DEBUG 29-04 17:50:04,903 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 17:50:05,553 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 17:50:05,806 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 17:50:05,816 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 17:50:05,820 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 17:50:05,820 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 17:51:08,604 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 17:51:08,614 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 17:51:08,622 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 29-04 17:51:08,626 (FileQuestionImpl.java:getInputStream:73)  -File: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" not found!
+DEBUG 29-04 17:51:08,627 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" (No such file or directory)
+java.io.FileNotFoundException: "/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt" (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+DEBUG 29-04 17:51:17,900 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 17:51:18,556 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 17:51:18,813 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 17:51:18,823 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 17:51:18,827 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 17:51:18,827 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 18:03:46,284 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:03:46,304 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 18:03:46,337 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 29-04 18:03:46,342 (FileQuestionImpl.java:getInputStream:73)  -File: ~/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt not found!
+DEBUG 29-04 18:03:46,345 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: ~/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt (No such file or directory)
+java.io.FileNotFoundException: ~/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/Pop_file_11sites_PGD_Spider.txt (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+DEBUG 29-04 18:03:56,231 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 18:03:57,209 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 18:03:57,466 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:03:57,476 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:03:57,482 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:03:57,482 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 18:14:50,289 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:14:50,307 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 18:14:50,321 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 29-04 18:14:50,325 (FileQuestionImpl.java:getInputStream:73)  -File: Pop_file_11sites_PGD_Spider.txt not found!
+DEBUG 29-04 18:14:50,329 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: Pop_file_11sites_PGD_Spider.txt (No such file or directory)
+java.io.FileNotFoundException: Pop_file_11sites_PGD_Spider.txt (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+DEBUG 29-04 18:14:59,672 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 18:15:00,342 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 18:15:00,596 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:15:00,607 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:15:00,613 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:15:00,613 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 18:48:43,579 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:48:43,596 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 18:48:43,612 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+ERROR 29-04 18:48:43,617 (FileQuestionImpl.java:getInputStream:73)  -File: Pop_file_11sites_PGD_Spider.txt not found!
+DEBUG 29-04 18:48:43,624 (FileQuestionImpl.java:getInputStream:74)  -java.io.FileNotFoundException: Pop_file_11sites_PGD_Spider.txt (No such file or directory)
+java.io.FileNotFoundException: Pop_file_11sites_PGD_Spider.txt (No such file or directory)
+	at java.io.FileInputStream.open0(Native Method)
+	at java.io.FileInputStream.open(FileInputStream.java:195)
+	at java.io.FileInputStream.<init>(FileInputStream.java:138)
+	at ch.unibe.iee.cmpg.pgdspider.model.question.FileQuestionImpl.getInputStream(FileQuestionImpl.java:71)
+	at ch.unibe.iee.cmpg.pgdspider.model.parser.VcfParser.parse(VcfParser.java:330)
+	at ch.unibe.iee.cmpg.pgdspider.cli.CLIController.convert(CLIController.java:242)
+	at ch.unibe.iee.cmpg.pgdspider.PGDSpiderCli.main(PGDSpiderCli.java:31)
+DEBUG 29-04 18:48:53,026 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 18:48:53,756 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 18:48:54,011 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:48:54,021 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:48:54,027 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:48:54,027 (PGDParser.java:parse:54)  -Reading data from inputstream...
+INFO  29-04 18:56:43,798 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:56:43,809 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 18:56:43,817 (ParserFactory.java:getParserInstance:177)  -New VcfParser instance
+DEBUG 29-04 18:58:56,946 (PGDWriter.java:write:47)  -Writing data to outputstream...
+DEBUG 29-04 18:59:00,667 (PGDWriter.java:write:56)  -Writing data to outputstream done.
+INFO  29-04 18:59:00,944 (PGDSpiderConfig.java:loadConfig:64)  -load PGDSpider configuration from: /usr/local/bioinfo/src/PGDSpider/PGDSpider_2.1.1.5/spider.conf.xml
+DEBUG 29-04 18:59:00,954 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:59:00,958 (ParserFactory.java:getParserInstance:161)  -New PGDParser instance
+DEBUG 29-04 18:59:00,958 (PGDParser.java:parse:54)  -Reading data from inputstream...

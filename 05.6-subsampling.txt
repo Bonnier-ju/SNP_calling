@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p workq
 #SBATCH --time=04:00:00 #job time limit
-#SBATCH -J 05.6-subsampling_inland #job name
+#SBATCH -J 05.6-subsampling_west_only #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
 #SBATCH --mem=20G #memory reservation
@@ -29,25 +29,24 @@ module load bioinfo/PLINK/1.90b7
 
 
 #Files path 
-INPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/LD_pruned_snp.vcf"
-EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_samples_west_out.txt"
-OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_full_SNP/sub_SNP_other/full_other"
-
+INPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/TE_filtered_snp.vcf"
+EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_sample_west_only.txt"
+OUTPUT1="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/full_SNP_no_pruned/full_SNP_no_pruned_west"
+#OUTPUT2="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_200k_SNP/sub_200k_SNP_full/sub_200k_SNP_full.vcf"
 
 echo "Creating subsampled VCF file "
 plink --vcf $INPUT \
   --recode vcf \
 	--allow-extra-chr \
-  --double-id \
 	--remove $EXCLUDE \
-	--out $OUTPUT
+	--out $OUTPUT1
 
 
 
 #echo "Starting sub-sampling"
 
-# Sub-sampling 4.484% of filtered variants
-#bcftools view $VCF_INPUT | vcfrandomsample -r 0.04484 > $OUTPUT
+# Sub-sampling 4.49% of filtered variants
+#bcftools view $OUTPUT1.vcf | vcfrandomsample -r 0.0449 > $OUTPUT2
 
 #echo "End of sub-sampling"
 

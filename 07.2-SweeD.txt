@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=50:00:00 #job time limit
+#SBATCH -J 07.2-SweeD_other #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=60G #memory reservation
+#SBATCH --cpus-per-task=20 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting SweeD"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/SweeD/4.0.0
+
+# Files paths
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_full_SNP/sub_SNP_other/full_other.vcf"
+
+
+echo "Running SweeD"
+
+cd /work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.2-SweeD/full_SNP/
+
+SweeD -input $INPUT_VCF -name full_SNP_other -grid 8000 -folded
+
+

@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 05.5-LD_pruning #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=40G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting filtration by LD"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/PLINK/1.90b7
+module load bioinfo/samtools/1.19
+module load bioinfo/Bcftools/1.9
+
+# Define file paths
+PLINK_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/TE_filtered_snp"
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/"
+EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_samples_MC87_Angela.txt"
+EXTRACT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned.prune.in"
+
+# Step 1: Calculate LD using plink
+plink --bfile $PLINK_FILE \
+	--indep-pairwise 10000 5000 0.4 \
+	--allow-extra-chr \
+	--remove $EXCLUDE \
+	--out $OUTPUT_DIR/ld_04_pruned
+
+
+
+
+# Step 2: Creating new VCF with pruned SNP
+plink --bfile $PLINK_FILE \
+	--extract $EXTRACT \
+	--allow-extra-chr \
+	--remove $EXCLUDE \
+  --recode vcf \
+	--out $OUTPUT_DIR/ld_04_pruned
+
+

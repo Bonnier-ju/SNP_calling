@@ -1,0 +1,37 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 05.5-LD_computing #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=40G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting filtration by LD"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/PLINK/1.90b7
+module load bioinfo/samtools/1.19
+module load bioinfo/Bcftools/1.9
+
+# Define file paths
+PLINK_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/TE_filtered_snp"
+OUTPUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/"
+EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_samples_MC87_Angela.txt"
+
+# Step 1: Calculate LD using plink
+plink --bfile $PLINK_FILE \
+	--r2 \
+	--ld-window-kb 100000 \
+	--allow-extra-chr \
+	--remove $EXCLUDE \
+	--out $OUTPUT_DIR/ld_results
+
+
+
+awk 'NR == 1 || rand() < 0.1' /work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/ld_results.ld > /work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/ld_results_10percent.ld

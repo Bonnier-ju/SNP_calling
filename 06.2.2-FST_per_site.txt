@@ -1,0 +1,58 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=5:00:00 #job time limit
+#SBATCH -J 06.2.2-FST_per_site #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=8G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+# Load necessary modules
+module load bioinfo/PLINK/1.90b7
+module load bioinfo/samtools/1.14
+module load bioinfo/VCFtools/0.1.16
+
+# Files path 
+BASE_DIR="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.2-global_population_stats/06.2.2-FST_per_sites/full_SNP_MC87_out/"
+VCF_PATH="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/LD_pruned_snp.vcf"
+ASSOC_PATH="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/Pop_file.txt"
+EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.2-global_population_stats/exclude_samples.txt"
+
+# Create site files directory
+mkdir -p ${BASE_DIR}/site_files
+
+# Process the association file and create a separate file for each site
+while IFS=$'\t' read -r SITE ID; do
+    echo $ID >> ${BASE_DIR}/site_files/${SITE}.txt
+done < $ASSOC_PATH
+
+# Create a directory for the FST results if it doesn't exist
+mkdir -p ${BASE_DIR}/fst_results
+
+# Calculate global FST for each pair of sites
+for i in {1..11}; do
+    for j in $(seq $((i + 1)) 11); do
+        SITE1=$(ls ${BASE_DIR}/site_files | sed -n "${i}p" | sed 's/.txt//')
+        SITE2=$(ls ${BASE_DIR}/site_files | sed -n "${j}p" | sed 's/.txt//')
+        vcftools --vcf $VCF_PATH --remove $EXCLUDE --weir-fst-pop ${BASE_DIR}/site_files/${SITE1}.txt --weir-fst-pop ${BASE_DIR}/site_files/${SITE2}.txt --out ${BASE_DIR}/fst_results/fst_${SITE1}_vs_${SITE2}
+    done
+done
+
+# Create a summary file for global FST values
+SUMMARY_FILE=${BASE_DIR}/fst_summary.txt
+echo -e "Site1\tSite2\tGlobal_FST" > $SUMMARY_FILE
+
+for FILE in ${BASE_DIR}/fst_results/*.weir.fst; do
+    # Extract site names more accurately using sed
+    NAME=$(basename $FILE .weir.fst)  # Remove the extension
+    SITE1=$(echo $NAME | sed 's/fst_\(.*\)_vs_\(.*\)/\1/')
+    SITE2=$(echo $NAME | sed 's/fst_\(.*\)_vs_\(.*\)/\2/')
+    
+    # Calculate the average FST, excluding non-numeric values
+    FST=$(awk '$3 != "-nan" && $3 == $3 {sum += $3; count++} END {if (count > 0) print sum/count; else print "NA"}' $FILE)
+    echo -e "${SITE1}\t${SITE2}\t$FST" >> $SUMMARY_FILE
+done
+
+echo "Global FST analysis completed"

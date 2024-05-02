@@ -1,0 +1,50 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=5:00:00 #job time limit
+#SBATCH -J 00.6-Plink_to_BayPass #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=5G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting conversion to BayPass file"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/PLINK/1.90b7
+
+#File path
+METADATA="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/Pop_file.txt"
+PLINK_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_200k_SNP/sub_200k_SNP"
+OUTPUT_MID="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/freq_count"
+F_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/09-EAA/09.1-BayPass/200k_SNP_baypass.txt"
+
+
+#BayPass requires that the allele frequency data be on a population, not an individual basis. The genotyping data file is organized as a matrix with nsnp rows and 2 ∗ npop columns. The row field separator is a space. More precisely, each row corresponds to one marker, and the number of columns is twice the number of populations because each pair of numbers corresponds to each allele (or read counts for PoolSeq experiment) counts in one population.
+
+#To generate this population gene count data, we will work with the PLINK file. First, we have to fix the individual ID and population labels, as PLINK has pulled these directly from the VCF, which has no population information. We aim for population in column 1 and individual ID in column 2.
+
+
+cd /work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/
+
+# Create a backup of the original PLINK .ped file
+cp ${PLINK_FILE}.ped ${PLINK_FILE}_backup.ped
+
+#remove first 2 columns
+cut -f 3- $PLINK_FILE.ped > x.delete
+
+paste $METADATA x.delete > $PLINK_FILE.ped
+rm x.delete
+
+#Run the population-based allele frequency calculations
+echo "Run population-based allele frequency"
+plink --file $PLINK_FILE --allow-extra-chr --freq counts --family --out $OUTPUT_MID
+
+#Manipulate file so it has BayPass format, numbers set for PLINK output file, and population number for column count
+tail -n +2 OUTPUT_MIDfreq_count.frq.strat | awk '{ $9 = $8 - $7 } 1' | awk '{print $7,$9}' | tr "\n" " " | sed 's/ /\n/6; P; D' > $F_OUTPUT
+
+echo "End of converting to BayPass format"

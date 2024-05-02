@@ -1,0 +1,42 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=10:00:00 #job time limit
+#SBATCH -J 06.2.1-PCA_inland_only #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Principal component analysis  #####
+#########################################
+
+echo "Starting PCA script."
+
+
+#Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/PLINK/2.00a4 
+module load bioinfo/PLINK/1.90b7
+
+
+# Input file path
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/LD_pruned_snp_inland_only"
+OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.2-global_population_stats/06.2.1-PCA/full_SNP_inland_only/"
+EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_sample_inland_only.txt"
+
+#Add ID to variant and converting into binary file (.bed, .bim, .fam)
+ 
+plink --bfile $INPUT_VCF \
+	--allow-extra-chr \
+	--remove $EXCLUDE \
+	--pca \
+	--out $OUTPUT/full_SNP_inland_only
+
+
+echo "Computing done" 
