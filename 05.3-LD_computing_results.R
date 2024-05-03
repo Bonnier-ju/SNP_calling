@@ -22,7 +22,7 @@ data <- data[data$Distance <= 10000, ]
 summary(data$Distance)
 
 # Sous-échantillonnage d'un quart des données
-sample_size <- nrow(data) * 0.25
+sample_size <- nrow(data) * 0.01
 sample_indices <- sample(1:nrow(data), size = sample_size)
 sampled_data <- data[sample_indices, ]
 
@@ -33,3 +33,13 @@ ggplot(sampled_data, aes(x = Distance, y = R2)) +
   labs(x = "Distance entre SNP (bp)", y = "Valeur de R²",
        title = "Relation entre le déséquilibre de liaison (R²) et la distance entre SNP") +
   theme(plot.title = element_text(hjust = 0.5))
+
+# Créer un graphique de dispersion de R^2 en fonction de la distance
+ggplot(sampled_data, aes(x = Distance, y = R2)) +
+  geom_point(alpha = 0.6) +  
+  geom_smooth(method = "lm", col = "red") +  
+  theme_minimal() +  
+  labs(x = "Distance entre SNP (bp)", y = "Valeur de R²",
+       title = "Relation entre le déséquilibre de liaison (R²) et la distance entre SNP") +
+  theme(plot.title = element_text(hjust = 0.5))
+

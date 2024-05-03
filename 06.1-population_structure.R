@@ -142,18 +142,18 @@ library(dplyr)
 library(tidyr)
 
 # Chemins vers les résultats d'admixture, les informations sur la population, et le fichier des sites
-admixture_results_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.1-admixture/full_SNP_MC87_out/"
-pop_files_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/Pop_file.csv"
+admixture_results_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/06-population_structure/06.1-admixture/full_SNP/"
+pop_files_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/Pop_files/Pop_file.csv"
 
 # Lecture du fichier des sites d'échantillonnage
-sites_data <- read.csv(pop_files_path, header = TRUE, stringsAsFactors = FALSE)
+sites_data <- read.csv(pop_files_path, header = T, stringsAsFactors = FALSE)
 colnames(sites_data) <- c("SamplingSite", "IndividualID")
 
 # Choisir une valeur spécifique de K pour la visualisation
-K <- 5
+K <- 8
 
 # Lecture des résultats d'admixture avec les noms des individus
-admixture_file <- sprintf("%sLD_pruned_snp_MC87_out.%d.named.Q", admixture_results_path, K)
+admixture_file <- sprintf("%sld_04_pruned.%d.named.Q", admixture_results_path, K)
 
 admixture_data <- read.table(admixture_file, col.names = c("IndividualID", paste0("Ancestry", 1:K)))
 
@@ -169,7 +169,7 @@ colnames(admixture_data)[K+3] <- "ID"
 
 # Transformation des données pour la visualisation
 admixture_long <- admixture_data %>%
-  gather(key = "Cluster", value = "Proportion", -IndividualID, -SamplingSite, -ID) %>%
+  gather(key = "Ancestry", value = "Proportion", -IndividualID, -SamplingSite, -ID) %>%
   mutate(Ancestry = factor(Ancestry, levels = paste0("Ancestry", 1:K)))
 
 #Exclure les valeurs contenant des NA cad les inds noms compris dans le groupe en cours d'analyse 

@@ -199,21 +199,21 @@ library(dartR)
 library(vcfR)
 library(adegenet)
 
-
+# Importing SNP and pop file 
 vcf_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/VCF_files/ld_04_pruned.vcf"
 csv_file <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Bio-informatique analysis/Pop_files/Pop_file_11sites.csv"
 
-
 data <- read.vcfR(vcf_path)
-
 data <- vcfR2genind(data)
 
+#Linking pop file en SNP data
 pop_info <- read.csv(csv_file, header = T)
+populations <- pop_info[, "Population"]
+data@pop <- factor(populations)
+print(data)
 
-populations <- pop_info[, "population"]
-
-genind_data@pop <- factor(populations)
-
-print(genind_data)
-
+#Converting geneind object to genlight to use it with dartR
 data <- gi2gl(data, parallel = FALSE, verbose = NULL)
+
+#Computing fst
+fst_results <- gl.fst(data, nboot = 1000)  
