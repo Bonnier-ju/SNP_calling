@@ -53,23 +53,21 @@ nrow(env_data)
 # Following our previous analysis on population structure best K is 3 
 K <- 3
 
-
 # Run LFMM2
 # The lfmm2 function estimates latent factors based on an exact least-squares approach.
 # The resulting object can be used by the function lfmm2.test to identify genetic polymorphisms 
 # exhibiting association with ecological gradients or phenotypes, while correcting for unobserved confounders. 
 mod_lfmm2 <- lfmm2(input = genotype_matrix, env = env_data, K = K)
 
-
-# p-values non calibrées
-# Avec la fonction lfmm2.test, nous pouvons obtenir un vecteur de p-values pour les associations entre loci et 
-# variables environnementales ajustées pour les facteurs latents calculés par lfmm2.
+# uncalibrated p-values
+# With the lfmm2.test function, we can obtain a vector of p-values for associations between loci and 
+# environmental variables adjusted for latent factors calculated by lfmm2.
 lfmm2.test(object = mod_lfmm2, input = genotype_matrix, env = env_data, full = FALSE, genomic.control = FALSE)$pvalues %>%
   hist(col = "orange", 
        main="Histogram of non-calibrated p-values",
        xlab="p-values")
 
-# p-values calibrées
+# p-values calibrated
 lfmm2.test(object = mod_lfmm2, input = genotype_matrix, env = env_data, full = FALSE, genomic.control = TRUE)$pvalues %>%
   hist(col = "orange", 
        main="Histogram of calibrated p-values",
@@ -77,43 +75,38 @@ lfmm2.test(object = mod_lfmm2, input = genotype_matrix, env = env_data, full = F
 
 # Looking for the ideal p-value distribution by using calibrated p-value => flat with a peak at 0
 
-
-# Calcul des p-values calibrés
 test_lfmm2 <- lfmm2.test(object = mod_lfmm2, input = genotype_matrix, env = env_data, full = FALSE, genomic.control = TRUE)
 pv_lfmm2 <- test_lfmm2$pvalues
 
-
 # Renamin col of p-value file with true SNP names
 vcf <- read.vcfR(vcf_file)
-snp_names <- vcf@fix[, "ID"]  # Obtenir les noms des SNP à partir de la colonne "ID"
+snp_names <- vcf@fix[, "ID"]  
 head(snp_names)
 colnames(pv_lfmm2) <- snp_names
-
-
 
 # We convert the adjusted p-values to q-values. q-values provide a measure of each SNP’s significance, 
 # automatically taking into account the fact that thousands are simultaneously being tested. 
 # We can then use an FDR (False Discovery Rate) threshold to control the number of false positive detections 
 # (given that our p-value distribution is “well-behaved”).
 
-# Appliquer la correction FDR pour obtenir les q-values
-fdr_level <- 0.05
+fdr_level <- 0.01
 
-# Extraire les p-values pour la variable annual_pet
+# Extract p-value for one variable
 annual_pet_pvalues <- pv_lfmm2["annualPET", ]
 
-# Appliquer la correction FDR
+# Apply FDR
 qv_lfmm2 <- qvalue::qvalue(annual_pet_pvalues, fdr.level = fdr_level)
 
-# Identifier les SNPs significatifs
+# Identify candidat SNP
 significant_snps <- which(qv_lfmm2$qvalues < fdr_level)
+# or 
+# candidates <- which(qv_lfmm2$significant)
 
-# Créer un dataframe avec les SNPs significatifs
+# Create à data frame
 significant_snps_df <- data.frame(SNP = significant_snps, 
                                   p_value = valid_pvalues[significant_snps], 
                                   q_value = qv_lfmm2$qvalues[significant_snps])
 
-# Afficher les premiers SNPs significatifs
 head(significant_snps_df)
 
 
