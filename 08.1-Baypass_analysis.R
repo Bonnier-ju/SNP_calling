@@ -54,24 +54,28 @@ file.path.SNP_info <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Arti
 SNP_info=read.table(file.path.SNP_info)
 
 # read result file
-file.path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Analysis/08-EAA/08.1-BayPass/Var_temp_pluvio/results_BF.txt"
+file.path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Analysis/08-EAA/08.1-BayPass/Run_2/SNP_run2_summary_betai_reg.out"
 summary_data <- read.table(file.path, header = TRUE, sep = "")
+head(summary_data)
 
 colnames(summary_data)[1] <- "Env_var"
 
 #split result file by covariables
-data_covariable <- dplyr::filter(summary_data, Env_var == 2)
+data_covariable <- dplyr::filter(summary_data, Env_var == 14)
 
-data_covariable$Env_var <- "BIO12 = Annual Precipitation"
+data_covariable$Env_var <- "BIO2 = Mean Diurnal Range"
 
 data_covariable <- cbind(SNP_info, data_covariable)
 
 names(data_covariable)[1:3] <- c("Scaffold", "Position", "SNP_name")
 data_covariable[[5]] <- NULL
-
+head(data_covariable)
 
 # Extraire les lignes où BF.db. est supérieur à 20
+
 filtered_data <- subset(data_covariable, BF.dB. > 20)
+
+#filtered_data_BIO2 <- subset(data_covariable, BF.dB. > 20)
 
 # Afficher les premières lignes pour vérifier
 head(filtered_data)
