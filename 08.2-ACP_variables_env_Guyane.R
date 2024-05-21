@@ -1,4 +1,4 @@
-#
+
 ################# Réalisation d'une ACP sur les variables climatiques en Guyane #####################
 #####################################################################################################
 
@@ -44,3 +44,55 @@ fviz_pca_ind(acp_result, geom.ind = "point", col.ind = "cos2", gradient.cols = c
 # Afficher les contributions des variables
 fviz_contrib(acp_result, choice = "var", axes = 1, top = 20)
 fviz_contrib(acp_result, choice = "var", axes = 2, top = 20)
+
+
+
+#########################################################################################
+# Charger les bibliothèques nécessaires
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(FactoMineR)
+library(factoextra)
+
+# Lire les données à partir du fichier CSV
+file_path <- "C:/Users/bonni/OneDrive/Université/Thèse/Dicorynia/Article - Population Genomics/Analysis/08-EAA/08.2-Variables_climatiques_guyane/Variable_full_Guyane.csv"
+data <- read_csv(file_path)
+
+# Afficher les premières lignes des données pour comprendre leur structure
+print(head(data))
+
+# Convertir les variables catégorielles en variables numériques (encodage one-hot)
+data <- data %>%
+  mutate_if(is.character, as.factor) %>%
+  mutate_if(is.factor, as.numeric)
+
+# Normaliser les données
+data_scaled <- scale(data)
+
+# Réaliser l'ACP
+pca_result <- PCA(data_scaled, graph = FALSE)
+
+# Visualiser les résultats de l'ACP
+# Biplot des individus et des variables
+fviz_pca_biplot(pca_result, repel = TRUE, col.var = "blue", col.ind = "red") +
+  ggtitle("Biplot des individus et des variables")
+
+# Variance expliquée par chaque composante principale
+fviz_screeplot(pca_result, addlabels = TRUE, ylim = c(0, 50)) +
+  ggtitle("Variance expliquée par chaque composante principale")
+
+# Contributions des variables à la première composante principale
+fviz_pca_var(pca_result, col.var = "contrib") +
+  scale_color_gradient2(low = "white", mid = "blue", high = "red", midpoint = 50) +
+  theme_minimal() +
+  ggtitle("Contributions des variables à la première composante principale")
+
+# Contributions des individus à la première composante principale
+fviz_pca_ind(pca_result, col.ind = "cos2") +
+  scale_color_gradient2(low = "white", mid = "blue", high = "red", midpoint = 0.5) +
+  theme_minimal() +
+  ggtitle("Contributions des individus à la première composante principale")
+
+
+
