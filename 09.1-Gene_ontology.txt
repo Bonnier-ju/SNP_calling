@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 09.1-gene_ontology #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=50G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+module purge
+
+# Load necessary modules

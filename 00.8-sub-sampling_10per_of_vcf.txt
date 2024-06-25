@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=04:00:00 #job time limit
+#SBATCH -J 00.8-subsampling_VCF #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+INPUT_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned.vcf"
+SUB_VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/50per_04LD_pruned.vcf"
+
+# Nombre total de SNPs
+TOTAL_SNPS=599959
+
+# Calcule le nombre de SNPs à sélectionner
+NUM_SNPS_TO_SELECT=$((TOTAL_SNPS / 6))
+
+# Génère un fichier contenant les lignes d'en-tête (commençant par #)
+grep "^#" "$INPUT_VCF" > "$SUB_VCF"
+
+# Sélectionne aléatoirement 10% des SNPs et les ajoute au fichier de sortie
+grep -v "^#" "$INPUT_VCF" | shuf -n "$NUM_SNPS_TO_SELECT" >> "$SUB_VCF"
+
+echo "Sous-échantillonnage terminé. Le fichier de sortie est $SUB_VCF"

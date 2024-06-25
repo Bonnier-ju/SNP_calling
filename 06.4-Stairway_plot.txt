@@ -1,0 +1,93 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 06.4-Stairway_plot #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=50G #memory reservation
+#SBATCH --cpus-per-task=6 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+module purge
+
+# Load necessary modules
+module load devel/Miniconda/Miniconda3
+module load bioinfo/SMC++/1.15.5
+module load bioinfo/Bcftools/1.9
+
+# Définir les chemins vers les fichiers
+VCF_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.4-transposable_element_filtering/TE_filtered_snp.vcf.gz"
+CSV_FILE="/work/user/jbonnier/Dicorynia/full_workflow/pop_files/Pop_file_East_Inland_West_StG.csv"
+REFERENCE_GENOME="/work/user/jbonnier/Dicorynia/Raw_data/Dgu_HS1_HYBRID_SCAFFOLD.fa"
+OUT_DIR="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.4-stairway_plot/results_"
+MUTATION_RATE="1.25e-8"
+
+# Read sample groups from the CSV file
+declare -A groups
+
+while IFS=, read -r site group id
+do
+    if [ "$group" != "Group" ]; then
+        clean_group=$(echo $group | tr ' ' '_' | tr -cd '[:alnum:]_')
+        groups["$clean_group"]+="$id,"
+    fi
+done < <(sed 's/[^[:print:]]//g' $CSV_FILE)
+
+# Contig à traiter
+contig="Super-Scaffold_1"
+contig_length=41062991  # Longueur spécifiée pour Super-Scaffold_1
+
+# Convert VCF to smc++ files for each group
+for group in "${!groups[@]}"
+do
+    samples=${groups[$group]}
+    sample_list=$(echo $samples | sed 's/,$//')
+    
+    echo "Processing group: $group with samples: $sample_list"
+
+    # Apply filters and convert VCF to smc++ format
+    smc++ vcf2smc --ignore-missing --length $contig_length $VCF_FILE $OUT_DIR/${group}_${contig}.smc.gz $contig ${group}:${sample_list}
+    
+    # Check if the smc++ file is generated and not empty
+    if [ ! -s $OUT_DIR/${group}_${contig}.smc.gz ]; then
+        echo "Error: $OUT_DIR/${group}_${contig}.smc.gz is empty or not generated correctly."
+        exit 1
+    else
+        echo "$OUT_DIR/${group}_${contig}.smc.gz generated successfully."
+    fi
+done
+
+# Estimate demographic parameters for each group
+for group in "${!groups[@]}"
+do
+    echo "Estimating demographic parameters for group: $group"
+
+    smc++ estimate -o $OUT_DIR/${group}_${contig} $MUTATION_RATE $OUT_DIR/${group}_${contig}.smc.gz
+    
+    # Check if the final model file is generated and not empty
+    if [ ! -s $OUT_DIR/${group}_${contig}/model.final.json ]; then
+        echo "Error: $OUT_DIR/${group}_${contig}/model.final.json is empty or not generated correctly for group: $group."
+        exit 1
+    else
+        echo "$OUT_DIR/${group}_${contig}/model.final.json generated successfully for group: $group."
+    fi
+done
+
+# Visualize results for each group
+for group in "${!groups[@]}"
+do
+    echo "Visualizing results for group: $group"
+
+    smc++ plot $OUT_DIR/${group}_${contig}/plot.pdf $OUT_DIR/${group}_${contig}/model.final.json
+    
+    # Check if the PDF file is generated and not empty
+    if [ ! -s $OUT_DIR/${group}_${contig}/plot.pdf ]; then
+        echo "Error: $OUT_DIR/${group}_${contig}/plot.pdf is empty or not generated correctly for group: $group."
+        exit 1
+    else
+        echo "$OUT_DIR/${group}_${contig}/plot.pdf generated successfully for group: $group."
+    fi
+done
+
+echo "smc++ analysis completed"

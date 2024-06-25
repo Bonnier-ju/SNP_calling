@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=95:00:00 #job time limit
+#SBATCH -J 08.5-BayEnv #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=60G #memory reservation
+#SBATCH --cpus-per-task=25 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+# Clean the work environment
+module purge
+
+#Load modules
+module load bioinfo/BAYENV/edcea64
+
+#Input files
+GENOTYPE_FILE="/work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.5-BayEnv/SNP_BayEnv.txt"
+OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.5-BayEnv/Bayenv_results"
+
+#Running BayEnv 
+
+echo "Starting BayEnv"
+
+cd /work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.5-BayEnv/
+
+bayenv2 -i $GENOTYPE_FILE -p 11 -k 100000 -r 10 > matrix.out
+

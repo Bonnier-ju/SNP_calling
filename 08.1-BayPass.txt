@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH -p workq
-#SBATCH --time=50:00:00 #job time limit
-#SBATCH -J 09.1-BayPass #job name
+#SBATCH --time=95:00:00 #job time limit
+#SBATCH -J 08.1-BayPass_run_2 #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=30G #memory reservation
-#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mem=60G #memory reservation
+#SBATCH --cpus-per-task=25 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
@@ -20,9 +20,12 @@ module load statistics/R/4.2.2
 module load bioinfo/BayPass/2.4
 
 #files paths
-GENOTYPE_FILE="/your/path/to/genotype_file.txt"
-ENV_FILE="/your/path/to/env_file.txt"
-OUTPUT_PREFIX="/your/output/directory/output_baypass"
+GENOTYPE_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/full_SNP_baypass.txt"
+ENV_FILE="/work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.1-BayPass/Selected_var.txt"
+OUTPUT_PREFIX="/work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.1-BayPass/Run_2/SNP_run2"
+OMEGA_FILE="/work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.1-BayPass/full_SNP_mat_omega.out"
 
 #Running BayPass
-baypass -gfile ${GENOTYPE_FILE} -efile ${ENV_FILE} -outprefix ${OUTPUT_PREFIX}
+
+baypass -gfile ${GENOTYPE_FILE} -outprefix ${OUTPUT_PREFIX} \
+  -omegafile ${OMEGA_FILE} -efile ${ENV_FILE} 

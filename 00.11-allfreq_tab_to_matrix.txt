@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 00.5-allfreq_to_matrix #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+# Chemin du fichier d'entrée et du fichier de sortie
+INPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.3-allele_freq/allfreq.frq.strat"
+OUTPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.3-allele_freq/output_matrix.csv"
+
+# Extraire les noms des SNP et les populations
+SNPs=$(cut -d' ' -f2 $INPUT_FILE | tail -n +2 | sort | uniq)
+POPULATIONS=$(cut -d' ' -f3 $INPUT_FILE | tail -n +2 | sort | uniq)
+
+# Créer le fichier de sortie et ajouter les en-têtes
+echo -n "Population" > $OUTPUT_FILE
+for SNP in $SNPs; do
+    echo -n ",$SNP" >> $OUTPUT_FILE
+done
+echo "" >> $OUTPUT_FILE
+
+# Initialiser la matrice avec des valeurs manquantes (NA)
+declare -A MATRIX
+for POP in $POPULATIONS; do
+    for SNP in $SNPs; do
+        MATRIX[$POP,$SNP]="NA"
+    done
+done
+
+# Remplir la matrice avec les valeurs de MAF
+while read -r line; do
+    SNP=$(echo $line | awk '{print $2}')
+    POP=$(echo $line | awk '{print $3}')
+    MAF=$(echo $line | awk '{print $6}')
+    MATRIX[$POP,$SNP]=$MAF
+done < <(tail -n +2 $INPUT_FILE)
+
+# Écrire la matrice dans le fichier de sortie
+for POP in $POPULATIONS; do
+    echo -n "$POP" >> $OUTPUT_FILE
+    for SNP in $SNPs; do
+        echo -n ",${MATRIX[$POP,$SNP]}" >> $OUTPUT_FILE
+    done
+    echo "" >> $OUTPUT_FILE
+done
+
+echo "Matrice sauvegardée dans $OUTPUT_FILE"

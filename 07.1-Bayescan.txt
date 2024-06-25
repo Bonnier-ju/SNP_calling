@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH -p workq
-#SBATCH --time=60:00:00 #job time limit
-#SBATCH -J 08.1-Bayescan #job name
+#SBATCH -p unlimitq
+#SBATCH --time=250:00:00 #job time limit
+#SBATCH -J 07.1-Bayescan #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=50G #memory reservation
-#SBATCH --cpus-per-task=20 #ncpu on the same node
+#SBATCH --mem=100G #memory reservation
+#SBATCH --cpus-per-task=40 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
 
@@ -19,13 +19,15 @@ module load statistics/R/4.2.2
 module load bioinfo/BayeScan/2.1
 
 # Define the path
-INPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.1-bayescan/200k_SNP/200k_SNP_GESTE.bs"
-OUTPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.1-bayescan/200k_SNP/"
+INPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.1-bayescan/full_SNP/ld_04_pruned_geste.bs"
+OUTPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.1-bayescan/full_SNP/"
 
 
 echo "Running BayeScan"
 
-BayeScan $INPUT_FILE -od $OUTPUT_FILE -o bayescan_200k_output
+BayeScan $INPUT_FILE -od $OUTPUT_FILE -o bayescan_full_output \
+  -n 50000 -nbp 20 -pilot 100 -burn 1000 \
+  -pr_odds 100 
   
 
 echo "BayeScan analysis complete"

@@ -1,0 +1,34 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=20:00:00 #job time limit
+#SBATCH -J 00.5-allele_freq #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=10G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting allele frequency calculation"
+
+module purge
+
+module load bioinfo/PLINK/1.90b7
+
+#Files path
+VCF_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned.vcf"
+POP_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.3-allele_freq/Pop_id.csv"
+OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.3-allele_freq/allfreq"
+POP_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.3-allele_freq/allfreq_populations.txt"
+
+# Convertir le fichier VCF en format binaire PLINK
+# plink --vcf $VCF_FILE --make-bed --const-fid --allow-extra-chr --out $OUTPUT
+
+# Créer un fichier de population PLINK à partir du fichier CSV
+# awk -F, 'NR>1 {print $1, $2}' $POP_FILE > ${OUTPUT}_populations.txt
+
+# Calculer les fréquences alléliques par population
+plink --bfile $OUTPUT --family --allow-extra-chr --freq --out $OUTPUT
+
+# Afficher un message de fin
+echo "Les fréquences alléliques par population ont été calculées et sauvegardées dans ${OUTPUT}.frq.strat"

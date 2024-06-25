@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH -p unlimitq 
 #SBATCH --time=150:00:00 #job time limit
-#SBATCH -J 06.1-Admixture_east_only #job name
+#SBATCH -J 06.1-Admixture #job name
 #SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
 #SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
-#SBATCH --mem=60G #memory reservation
+#SBATCH --mem=80G #memory reservation
 #SBATCH --cpus-per-task=25 #ncpu on the same node
 #SBATCH --mail-user=julien.bonnier@ecofog.gf 
 #SBATCH --mail-type=END,FAIL
@@ -22,35 +22,33 @@ module load bioinfo/PLINK/1.90b7
 module load bioinfo/ADMIXTURE/1.3.0
 
 # Define paths
-VCF_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/LD_pruned_snp.vcf"
-BINARY_FILES="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/LD_pruned_snp_MC87_out"
-ADMIXTURE_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.1-admixture/full_SNP_MC87_out/"
-EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_samples_MC87_Angela.txt"
+VCF_INPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned.vcf"
+BINARY_FILES="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned"
+ADMIXTURE_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.1-admixture/full_SNP_04_pruned/"
 
 
 # Step 1: Converting VCF to binary files
-#echo "Converting VCF to binary files and excluding specific individuals..."
-#plink --vcf $VCF_INPUT \
-#	--make-bed \
-#	--allow-extra-chr \
-#	--remove $EXCLUDE \
-#	--double-id \
-#	--out $BINARY_FILES
+echo "Converting VCF to binary files and excluding specific individuals..."
+plink --vcf $VCF_INPUT \
+	--make-bed \
+	--allow-extra-chr \
+ --const-fid \
+	--out $BINARY_FILES
 
 # Step 2: Renaming chromosomes in .bim file to make it compatible with ADMIXTURE
-#echo "Renaming chromosomes in .bim file..."
-#awk '{$1="0"; print}' ${BINARY_FILES}.bim > ${BINARY_FILES}_temp.bim
-#mv ${BINARY_FILES}_temp.bim ${BINARY_FILES}.bim
+echo "Renaming chromosomes in .bim file..."
+awk '{$1="0"; print}' ${BINARY_FILES}.bim > ${BINARY_FILES}_temp.bim
+mv ${BINARY_FILES}_temp.bim ${BINARY_FILES}.bim
 
 # Move to ADMIXTURE directory
-cd /work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.1-admixture/full_SNP_MC87_out/
+cd /work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.1-admixture/full_SNP_04_pruned/
 
 # Step 3: Running ADMIXTURE
-#echo "Running ADMIXTURE..."
-#for K in {1..10}; do
-#    admixture --cv=100 $BINARY_FILES.bed $K | tee ${ADMIXTURE_OUTPUT}/log${K}.out
-#    echo "ADMIXTURE analysis for K=${K} is completed."
-#done
+echo "Running ADMIXTURE..."
+for K in {1..10}; do
+    admixture --cv=100 $BINARY_FILES.bed $K | tee ${ADMIXTURE_OUTPUT}/log${K}.out
+    echo "ADMIXTURE analysis for K=${K} is completed."
+done
 
 echo "End of ADMIXTURE processing, let's see the results"
 
@@ -60,9 +58,9 @@ grep -h CV log*.out > cross_validation.txt
 
 # Associating individual names with ADMIXTURE results
 echo "Associating individual names with ADMIXTURE results..."
-awk '{print $1}' $BINARY_FILES.fam > ${ADMIXTURE_OUTPUT}/individual_ids_MC87_out.txt
+awk '{print $2}' $BINARY_FILES.fam > ${ADMIXTURE_OUTPUT}/individual_ids.txt
 for K in {1..10}; do
-    paste ${ADMIXTURE_OUTPUT}/individual_ids_MC87_out.txt ${ADMIXTURE_OUTPUT}/LD_pruned_snp_MC87_out.${K}.Q > ${ADMIXTURE_OUTPUT}/LD_pruned_snp_MC87_out.${K}.named.Q
+    paste ${ADMIXTURE_OUTPUT}/individual_ids.txt ${ADMIXTURE_OUTPUT}/ld_04_pruned.${K}.Q > ${ADMIXTURE_OUTPUT}/ld_04_pruned.${K}.named.Q
     echo "Created named result file for K=${K}."
 done
 

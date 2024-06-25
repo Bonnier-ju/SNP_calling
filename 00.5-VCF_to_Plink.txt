@@ -19,16 +19,15 @@ module load bioinfo/PLINK/1.90b7
 
 
 # Define file paths
-VCF_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_200k_SNP/sub_200k_SNP_full/sub_200k_SNP_full.vcf"
-OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.6-subsampling_SNP/sub_200k_SNP/sub_200k_SNP_full/sub_200k_SNP_full"
-EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_samples_MC87_Angela.txt"
+VCF_FILE="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned.vcf"
+OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/full_SNP"
+#EXCLUDE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/exclude_samples_MC87_Angela.txt"
 
 
-
+ 
+ # Run PLINK command
 plink --vcf $VCF_FILE \
-	--make-bed \
-  --exclude $EXCLUDE \
-  --recode \
+  --make-bed \
   --const-fid \
-	--allow-extra-chr \
-	--out $OUTPUT
+  --allow-extra-chr \
+  --out $OUTPUT

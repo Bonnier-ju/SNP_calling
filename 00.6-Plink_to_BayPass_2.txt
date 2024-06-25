@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH -p workq 
+#SBATCH --time=5:00:00 #job time limit
+#SBATCH -J 00.6-Plink_to_BayPass #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=5G #memory reservation
+#SBATCH --cpus-per-task=2 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting conversion to BayPass file"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load bioinfo/PLINK/1.90b7
+
+#File path
+#METADATA="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/Pop_file.txt"
+PLINK_FILE="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/full_SNP"
+OUTPUT_MID="/work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/freq_count"
+#F_OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/08-EAA/08.1-BayPass/SNP_baypass.txt"
+
+
+sed -i 's/\t/ /g' $PLINK_FILE.fam
+
+
+
+#Run the population-based allele frequency calculations
+echo "Run population-based allele frequency"
+plink --bfile ${PLINK_FILE} --allow-extra-chr --freq counts --family --out $OUTPUT_MID
+
+cd /work/user/jbonnier/Dicorynia/full_workflow/01-random_stuff/01.2-converting_files/00.6-Plink_to_BayPass/
+
+# Adaptez cette commande pour manipuler le fichier de sortie correct
+tail -n +2 ${OUTPUT_MID}.frq.strat | awk '{ $9 = $8 - $7 } 1' | awk '{print $7,$9}' | tr "\n" " " | sed 's/ /\n/22; P; D' > full_SNP_baypass.txt
+
+

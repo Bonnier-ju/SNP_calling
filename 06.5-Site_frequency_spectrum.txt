@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=10:00:00 #job time limit
+#SBATCH -J 06.5-Site_Frequency_Spectrum #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=20G #memory reservation
+#SBATCH --cpus-per-task=5 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+
+
+##### Site Frequency Spectrum #####
+######################################
+
+echo "Starting the SFS script."
+
+
+#Cleaning work place 
+module purge
+
+# Load the necessary modules
+module load bioinfo/easySFS/0.0.1
+
+# Files paths 
+VCF="/work/user/jbonnier/Dicorynia/full_workflow/05-filtering_variants/05.5-LD-filtering/05.5.3-LD_04_pruned/ld_04_pruned.vcf" 
+POP_FILE="/work/user/jbonnier/Dicorynia/full_workflow/pop_files/pop_file_sfs.txt" 
+OUTPUT="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.5-site_frequency_spectrum/"
+
+
+#Preview
+#easySFS.py -i ${VCF} -p ${POP_FILE} -o${OUTPUT}  --preview -a
+
+#Convert
+easySFS.py -i ${VCF} -p ${POP_FILE} -o${OUTPUT} -a --proj=72,54,16,32
