@@ -1,0 +1,35 @@
+#!/bin/bash
+#SBATCH -p workq
+#SBATCH --time=50:00:00 #job time limit
+#SBATCH -J 07.1-Bayescan_FST #job name
+#SBATCH -o /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/output/output-%x-%j.out #output file name
+#SBATCH -e /work/user/jbonnier/Dicorynia/full_workflow/00-batch_scripts/error/error-%x-%j.out #error file name
+#SBATCH --mem=50G #memory reservation
+#SBATCH --cpus-per-task=10 #ncpu on the same node
+#SBATCH --mail-user=julien.bonnier@ecofog.gf 
+#SBATCH --mail-type=END,FAIL
+
+echo "Starting filtration Bayescan script"
+
+# Clean the work environment
+module purge
+
+#Module load
+module load statistics/R/4.2.2
+module load bioinfo/BayeScan/2.1
+
+# Define the path
+INPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/07-outlier_analysis/07.1-bayescan/full_SNP/ld_04_pruned_geste.bs"
+OUTPUT_FILE="/work/user/jbonnier/Dicorynia/full_workflow/06-population_structure/06.2-global_population_stats/06.2.2-FST_bayescan/"
+
+
+echo "Running BayeScan"
+
+BayeScan $INPUT_FILE -od $OUTPUT_FILE -o bayescan_fst -fstat
+  
+
+echo "BayeScan analysis complete"
+
+#One of the simplest possible scenarios covered consists of an island model in which subpopulation allele frequencies are correlated through a common migrant gene pool from which they differ in varying degrees. 
+#The difference in allele frequency between this common gene pool and each subpopulation is measured by a subpopulation specific FST coefficient. 
+#Therefore, this formulation can consider realistic ecological scenarios where the effective size and the immigration rate may differ among subpopulations.
