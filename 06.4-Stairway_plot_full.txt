@@ -92,8 +92,8 @@ for group in "${!groups[@]}"
 do
     echo "Visualizing results for group: $group using combined data"
 
-    smc++ plot $OUT_DIR/${group}_combined/plot.pdf $OUT_DIR/${group}_combined/model.final.json
-    
+    smc++ plot -g 30 -c $OUT_DIR/${group}_combined/plot.pdf $OUT_DIR/${group}_combined/model.final.json
+
     # Check if the PDF file is generated and not empty
     if [ ! -s $OUT_DIR/${group}_combined/plot.pdf ]; then
         echo "Error: $OUT_DIR/${group}_combined/plot.pdf is empty or not generated correctly for group: $group."
